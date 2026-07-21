@@ -1,0 +1,40 @@
+spring:
+    application:
+        name: veterinaria
+
+    datasource:
+        url: jdbc:sqlite:file:vet_server_kotlin?mode=memory&cache=shared
+        driver-class-name: org.sqlite.JDBC
+
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        show-sql: true
+        open-in-view: true
+        properties:
+            hibernate:
+                dialect: org.hibernate.community.dialect.SQLiteDialect
+                format_sql: true
+
+    jackson:
+        time-zone: America/Bogota
+
+springdoc:
+    api-docs:
+        path: /v3/api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        operationsSorter: method
+        tryItOutEnabled: true
+    packages-to-scan: co.edu.iub.veterinaria.controller
+    show-actuator: false
+
+logging:
+    level:
+        web: DEBUG
+        org.springframework.web: DEBUG
+
+app:
+    jwt:
+        secret: ${JWT_SECRET:this-is-a-dev-secret-must-be-at-least-32-bytes}
+        expiration-minutes: ${JWT_EXPIRATION_MINUTES:30}
