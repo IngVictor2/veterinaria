@@ -1,5 +1,6 @@
 package co.edu.iub.veterinaria.controller
 
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.dto.factura.FacturaRequest
 import co.edu.iub.veterinaria.dto.factura.FacturaResponse
 import co.edu.iub.veterinaria.model.EstadoFactura
@@ -39,7 +40,7 @@ class FacturaController(
 
     @PatchMapping("/{id}/estado")
     fun cambiarEstado(@PathVariable id: Int, @RequestBody body: Map<String, String>) {
-        val estadoStr = body["estadoFactura"] ?: throw IllegalArgumentException("estadoFactura es requerido")
+        val estadoStr = body["estadoFactura"] ?: throw InvalidRequestException("estadoFactura es requerido")
         val estado = EstadoFactura.valueOf(estadoStr)
         facturaService.cambiarEstado(id, estado)
     }

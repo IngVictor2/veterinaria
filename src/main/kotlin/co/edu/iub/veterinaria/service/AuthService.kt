@@ -2,8 +2,9 @@ package co.edu.iub.veterinaria.service
 
 import co.edu.iub.veterinaria.dto.auth.*
 import co.edu.iub.veterinaria.exception.DuplicateResourceException
+import co.edu.iub.veterinaria.exception.InvalidCredentialsException
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
-import org.springframework.security.authentication.BadCredentialsException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
 import co.edu.iub.veterinaria.security.JwtTokenProvider
@@ -73,13 +74,13 @@ class AuthService(
     @Transactional
     fun login(request: LoginRequest): AuthResponse {
         val usuario = usuarioRepository.findByCorreo(request.correo)
-            ?: throw BadCredentialsException("Credenciales inválidas")
+            ?: throw InvalidCredentialsException("Credenciales inválidas")
 
         if (!passwordEncoder.matches(request.password, usuario.passwordHash)) {
-            throw BadCredentialsException("Credenciales inválidas")
+            throw InvalidCredentialsException("Credenciales inválidas")
         }
         if (!usuario.estado) {
-            throw BadCredentialsException("Credenciales inválidas")
+            throw InvalidCredentialsException("Credenciales inválidas")
         }
 
         val rolesActivos = usuarioRolRepository
@@ -106,7 +107,7 @@ class AuthService(
             .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
 
         if (!passwordEncoder.matches(request.passwordActual, usuario.passwordHash)) {
-            throw IllegalArgumentException("La contraseña actual es incorrecta")
+            throw InvalidRequestException("La contraseña actual es incorrecta")
         }
 
         usuario.passwordHash = passwordEncoder.encode(request.nuevaPassword)
@@ -132,7 +133,7 @@ class AuthService(
             ?: throw ResourceNotFoundException("Token inválido")
 
         if (token.usado || token.fechaExpiracion.isBefore(LocalDateTime.now())) {
-            throw IllegalArgumentException("Token expirado o ya usado")
+            throw InvalidRequestException("Token expirado o ya usado")
         }
 
         val usuario = token.usuario

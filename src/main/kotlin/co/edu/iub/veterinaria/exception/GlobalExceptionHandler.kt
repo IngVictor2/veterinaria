@@ -21,35 +21,19 @@ class GlobalExceptionHandler {
 
     private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
-    @ExceptionHandler(ResourceNotFoundException::class)
-    fun handleNotFound(
-        ex: ResourceNotFoundException,
+    @ExceptionHandler(ApiException::class)
+    fun handleApiException(
+        ex: ApiException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
             ErrorResponse(
-                status = HttpStatus.NOT_FOUND.value(),
-                error = HttpStatus.NOT_FOUND.reasonPhrase,
-                message = ex.message ?: "Recurso no encontrado.",
+                status = ex.status.value(),
+                error = ex.status.reasonPhrase,
+                message = ex.message ?: "Error en la solicitud.",
                 path = request.requestURI
             ),
-            HttpStatus.NOT_FOUND
-        )
-    }
-
-    @ExceptionHandler(DuplicateResourceException::class)
-    fun handleDuplicate(
-        ex: DuplicateResourceException,
-        request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(
-            ErrorResponse(
-                status = HttpStatus.CONFLICT.value(),
-                error = HttpStatus.CONFLICT.reasonPhrase,
-                message = ex.message ?: "El registro ya existe.",
-                path = request.requestURI
-            ),
-            HttpStatus.CONFLICT
+            ex.status
         )
     }
 
@@ -108,39 +92,6 @@ class GlobalExceptionHandler {
         )
     }
 
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun handleIllegalArgument(
-        ex: IllegalArgumentException,
-        request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(
-            ErrorResponse(
-                status = HttpStatus.BAD_REQUEST.value(),
-                error = HttpStatus.BAD_REQUEST.reasonPhrase,
-                message = ex.message ?: "Solicitud inválida.",
-                path = request.requestURI
-            ),
-            HttpStatus.BAD_REQUEST
-        )
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException::class)
-    fun handleDataIntegrity(
-        ex: DataIntegrityViolationException,
-        request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
-        log.warn("Violación de integridad de datos en {}: {}", request.requestURI, ex.mostSpecificCause.message)
-        return ResponseEntity(
-            ErrorResponse(
-                status = HttpStatus.CONFLICT.value(),
-                error = HttpStatus.CONFLICT.reasonPhrase,
-                message = "La operación viola una restricción única en la base de datos.",
-                path = request.requestURI
-            ),
-            HttpStatus.CONFLICT
-        )
-    }
-
     @ExceptionHandler(BadCredentialsException::class)
     fun handleBadCredentials(
         ex: BadCredentialsException,
@@ -170,6 +121,23 @@ class GlobalExceptionHandler {
                 path = request.requestURI
             ),
             HttpStatus.FORBIDDEN
+        )
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrity(
+        ex: DataIntegrityViolationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        log.warn("Violación de integridad de datos en {}: {}", request.requestURI, ex.mostSpecificCause.message)
+        return ResponseEntity(
+            ErrorResponse(
+                status = HttpStatus.CONFLICT.value(),
+                error = HttpStatus.CONFLICT.reasonPhrase,
+                message = "La operación viola una restricción única en la base de datos.",
+                path = request.requestURI
+            ),
+            HttpStatus.CONFLICT
         )
     }
 

@@ -1,6 +1,7 @@
 package co.edu.iub.veterinaria.controller
 
 import co.edu.iub.veterinaria.dto.cita.*
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.model.EstadoCita
 import co.edu.iub.veterinaria.security.CurrentUserHelper
 import co.edu.iub.veterinaria.service.CitaService
@@ -50,7 +51,7 @@ class CitaController(
 
     @PatchMapping("/{id}/estado")
     fun cambiarEstado(@PathVariable id: Int, @RequestBody body: Map<String, String>) {
-        val estadoStr = body["estadoCita"] ?: throw IllegalArgumentException("estadoCita es requerido")
+        val estadoStr = body["estadoCita"] ?: throw InvalidRequestException("estadoCita es requerido")
         val estado = EstadoCita.valueOf(estadoStr)
         citaService.cambiarEstado(id, estado)
     }

@@ -1,5 +1,7 @@
 package co.edu.iub.veterinaria.exception
 
+import org.springframework.http.HttpStatus
+
 class DuplicateResourceException(
     message: String
-) : RuntimeException(message)
+) : ApiException(message, HttpStatus.CONFLICT)

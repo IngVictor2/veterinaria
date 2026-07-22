@@ -2,6 +2,8 @@ package co.edu.iub.veterinaria.service
 
 import co.edu.iub.veterinaria.dto.cita.*
 import co.edu.iub.veterinaria.exception.DuplicateResourceException
+import co.edu.iub.veterinaria.exception.InvalidRequestException
+import co.edu.iub.veterinaria.exception.InvalidStatusTransitionException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
@@ -82,7 +84,7 @@ class CitaService(
         val cita = citaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
         if (cita.estadoCita == EstadoCita.ATENDIDA || cita.estadoCita == EstadoCita.CANCELADA) {
-            throw IllegalArgumentException("No se puede reprogramar una cita ${cita.estadoCita}")
+            throw InvalidRequestException("No se puede reprogramar una cita ${cita.estadoCita}")
         }
         val conflictos = citaRepository.findByFechaCita(request.fechaCita)
             .any { it.idCita != id &&
@@ -104,9 +106,9 @@ class CitaService(
         val cita = citaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
         val permitidos = transicionesValidas[cita.estadoCita]
-            ?: throw IllegalArgumentException("Estado actual inválido: ${cita.estadoCita}")
-        if (nuevoEstado !in permitidos) {
-            throw IllegalArgumentException(
+            ?: throw InvalidStatusTransitionException("Estado actual inválido: ${cita.estadoCita}")
+            if (nuevoEstado !in permitidos) {
+            throw InvalidStatusTransitionException(
                 "No se puede cambiar de ${cita.estadoCita} a $nuevoEstado. " +
                 "Transiciones permitidas: ${permitidos.joinToString(", ")}"
             )

@@ -3,6 +3,7 @@ package co.edu.iub.veterinaria.service
 import co.edu.iub.veterinaria.dto.empleado.EmpleadoRequest
 import co.edu.iub.veterinaria.dto.empleado.EmpleadoResponse
 import co.edu.iub.veterinaria.exception.DuplicateResourceException
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
@@ -64,7 +65,7 @@ class EmpleadoService(
         val usuario = Usuario().apply {
             this.empleado = empleado
             nombreUsuario = request.nombreUsuario
-            passwordHash = passwordEncoder.encode(request.password ?: throw IllegalArgumentException("La contraseña es obligatoria"))
+            passwordHash = passwordEncoder.encode(request.password ?: throw InvalidRequestException("La contraseña es obligatoria"))
         }
         usuarioRepository.save(usuario)
 

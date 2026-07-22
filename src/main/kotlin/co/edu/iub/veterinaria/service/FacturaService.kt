@@ -3,6 +3,7 @@ package co.edu.iub.veterinaria.service
 import co.edu.iub.veterinaria.dto.factura.FacturaDetalleResponse
 import co.edu.iub.veterinaria.dto.factura.FacturaRequest
 import co.edu.iub.veterinaria.dto.factura.FacturaResponse
+import co.edu.iub.veterinaria.exception.InvalidStatusTransitionException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
@@ -84,9 +85,9 @@ class FacturaService(
         val factura = facturaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Factura no encontrada") }
         val permitidos = transicionesFactura[factura.estadoFactura]
-            ?: throw IllegalArgumentException("Estado actual inválido: ${factura.estadoFactura}")
+            ?: throw InvalidStatusTransitionException("Estado actual inválido: ${factura.estadoFactura}")
         if (nuevoEstado !in permitidos) {
-            throw IllegalArgumentException(
+            throw InvalidStatusTransitionException(
                 "No se puede cambiar de ${factura.estadoFactura} a $nuevoEstado. " +
                 "Transiciones permitidas: ${permitidos.joinToString(", ")}"
             )

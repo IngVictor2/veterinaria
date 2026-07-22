@@ -2,6 +2,7 @@ package co.edu.iub.veterinaria.service
 
 import co.edu.iub.veterinaria.dto.calificacion.CalificacionRequest
 import co.edu.iub.veterinaria.dto.calificacion.CalificacionResponse
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.Calificacion
 import co.edu.iub.veterinaria.model.EstadoCita
@@ -25,11 +26,11 @@ class CalificacionService(
             .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
 
         if (cita.estadoCita != EstadoCita.ATENDIDA) {
-            throw IllegalArgumentException("Solo se pueden calificar citas atendidas")
+            throw InvalidRequestException("Solo se pueden calificar citas atendidas")
         }
 
         if (calificacionRepository.findByCitaIdCita(request.idCita) != null) {
-            throw IllegalArgumentException("Esta cita ya fue calificada")
+            throw InvalidRequestException("Esta cita ya fue calificada")
         }
 
         val calificacion = Calificacion().apply {
