@@ -38,7 +38,7 @@ class AuthController(
         authService.changePassword(idUsuario, request)
     }
 
-    @PostMapping("/recuperar-password")
+    @PostMapping("/solicitar-recuperacion")
     fun requestReset(@Valid @RequestBody request: ResetPasswordRequest) {
         authService.requestPasswordReset(request)
     }

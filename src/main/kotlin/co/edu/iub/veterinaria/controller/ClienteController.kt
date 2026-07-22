@@ -3,6 +3,7 @@ package co.edu.iub.veterinaria.controller
 import co.edu.iub.veterinaria.dto.cliente.ClienteProfileRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteResponse
+import co.edu.iub.veterinaria.dto.cliente.CrearUsuarioClienteRequest
 import co.edu.iub.veterinaria.service.ClienteService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -43,6 +44,15 @@ class ClienteController(
     ): ClienteResponse {
 
         return clienteService.buscarPorId(id)
+    }
+
+    @PostMapping("/{id}/usuario")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun crearUsuario(
+        @PathVariable id: Int,
+        @Valid @RequestBody request: CrearUsuarioClienteRequest
+    ): Map<String, Any> {
+        return clienteService.crearUsuario(id, request)
     }
 
     @PostMapping

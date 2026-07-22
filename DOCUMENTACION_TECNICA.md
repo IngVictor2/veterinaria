@@ -2,7 +2,7 @@
 
 ## 1. Resumen
 
-API RESTful para la gestión integral de una clínica veterinaria construida con **Spring Boot 3 + Kotlin + SQLite in-memory + JWT**. Expone **68 endpoints** organizados en 17 controladores.
+API RESTful para la gestión integral de una clínica veterinaria construida con **Spring Boot 3 + Kotlin + SQLite in-memory + JWT**. Expone **69 endpoints** organizados en 17 controladores.
 
 ## 2. Stack Tecnológico
 
@@ -147,6 +147,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/clientes/me` | Authenticated | Perfil del cliente autenticado |
 | PUT | `/clientes/me` | Authenticated | Actualizar perfil propio (nombre, teléfono, correo, dirección) |
 | GET | `/clientes/{id}` | RECEP, ADMIN | Buscar por ID |
+| POST | `/clientes/{id}/usuario` | RECEP, ADMIN | Crear usuario para cliente existente |
 | POST | `/clientes` | RECEP, ADMIN | Crear |
 | PUT | `/clientes/{id}` | RECEP, ADMIN | Actualizar |
 | DELETE | `/clientes/{id}` | RECEP, ADMIN | Eliminar (soft) |
@@ -393,7 +394,7 @@ src/main/kotlin/co/edu/iub/veterinaria/
 │   ├── auth/ (6)                # Auth DTOs
 │   ├── calificacion/ (2)
 │   ├── cita/ (4)
-│   ├── cliente/ (3)               # + ClienteProfileRequest
+│   ├── cliente/ (4)               # + ClienteProfileRequest, CrearUsuarioClienteRequest
 │   ├── empleado/ (2)
 │   ├── error/ (1)
 │   ├── factura/ (2)

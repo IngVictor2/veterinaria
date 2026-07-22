@@ -3,18 +3,27 @@ package co.edu.iub.veterinaria.service
 import co.edu.iub.veterinaria.dto.cliente.ClienteProfileRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteResponse
+import co.edu.iub.veterinaria.dto.cliente.CrearUsuarioClienteRequest
 import co.edu.iub.veterinaria.exception.DuplicateResourceException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.Cliente
+import co.edu.iub.veterinaria.model.Usuario
+import co.edu.iub.veterinaria.model.UsuarioRol
 import co.edu.iub.veterinaria.repository.ClienteRepository
+import co.edu.iub.veterinaria.repository.RolRepository
 import co.edu.iub.veterinaria.repository.UsuarioRepository
+import co.edu.iub.veterinaria.repository.UsuarioRolRepository
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ClienteService(
     private val clienteRepository: ClienteRepository,
-    private val usuarioRepository: UsuarioRepository
+    private val usuarioRepository: UsuarioRepository,
+    private val usuarioRolRepository: UsuarioRolRepository,
+    private val rolRepository: RolRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     @Transactional(readOnly = true)
@@ -145,6 +154,42 @@ class ClienteService(
         }
 
         return toResponse(clienteRepository.save(cliente))
+    }
+
+    @Transactional
+    fun crearUsuario(idCliente: Int, request: CrearUsuarioClienteRequest): Map<String, Any> {
+        val cliente = clienteRepository.findById(idCliente)
+            .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
+
+        if (usuarioRepository.findByCorreo(request.email) != null) {
+            throw DuplicateResourceException("El correo ya está registrado")
+        }
+
+        val nombreUsuario = request.nombreUsuario ?: request.email.substringBefore("@")
+        if (usuarioRepository.existsByNombreUsuario(nombreUsuario)) {
+            throw DuplicateResourceException("El nombre de usuario ya existe")
+        }
+
+        val usuario = Usuario().apply {
+            this.cliente = cliente
+            this.nombreUsuario = nombreUsuario
+            passwordHash = passwordEncoder.encode(request.password)
+        }
+        usuarioRepository.save(usuario)
+
+        val rolCliente = rolRepository.findByNombre("CLIENTE")
+            ?: throw ResourceNotFoundException("Rol CLIENTE no encontrado")
+        usuarioRolRepository.save(UsuarioRol().apply {
+            this.usuario = usuario
+            this.rol = rolCliente
+        })
+
+        return mapOf(
+            "idUsuario" to usuario.idUsuario!!,
+            "nombreUsuario" to usuario.nombreUsuario,
+            "correo" to request.email,
+            "mensaje" to "Usuario creado exitosamente para el cliente"
+        )
     }
 
     private fun toResponse(cliente: Cliente): ClienteResponse {
