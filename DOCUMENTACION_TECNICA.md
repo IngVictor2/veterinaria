@@ -189,6 +189,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/facturas/{id}` | RECEP, ADMIN | Buscar por ID |
 | GET | `/facturas/cliente/{idCliente}` | RECEP, ADMIN | Por cliente |
 | POST | `/facturas` | RECEP, ADMIN | Crear |
+| PATCH | `/facturas/{id}/estado` | RECEP, ADMIN | Cambiar estado (PENDIENTE→PAGADA/ANULADA) |
 
 ### Pagos (`/pagos`) — RECEPCIONISTA, ADMIN
 
@@ -284,16 +285,31 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | `RECEPCIONISTA` | Clientes, Mascotas, Citas, Facturas, Pagos |
 | `CLIENTE` | Mis mascotas, mis citas, mis facturas, calificaciones |
 
+### Jerarquía de excepciones
+
+Todas las excepciones de dominio extienden `ApiException`, que lleva asociado el `HttpStatus` correspondiente:
+
+```
+ApiException (message, status)
+├── ResourceNotFoundException          → 404
+├── DuplicateResourceException         → 409
+├── InvalidCredentialsException        → 401
+├── InvalidStatusTransitionException   → 400
+└── InvalidRequestException            → 400
+```
+
+El `GlobalExceptionHandler` captura `ApiException` con un único handler genérico y mantiene handlers separados solo para excepciones de Spring (`BadCredentialsException`, `AccessDeniedException`, validación, etc.).
+
 ### Manejo de errores
 
-| Código | Causa | Formato |
-|--------|-------|---------|
-| 400 | Validación, argumento inválido | `ErrorResponse` JSON |
-| 401 | Credenciales inválidas / token ausente | `ErrorResponse` JSON |
-| 403 | Sin permisos para el recurso | `ErrorResponse` JSON |
-| 404 | Recurso no encontrado | `ErrorResponse` JSON |
-| 409 | Duplicado / violación integridad | `ErrorResponse` JSON |
-| 500 | Error interno no controlado | `ErrorResponse` JSON |
+| Código | Excepción | Causa |
+|--------|-----------|-------|
+| 400 | `InvalidRequestException`, `InvalidStatusTransitionException` | Validación, argumento inválido, transición de estado no permitida |
+| 401 | `InvalidCredentialsException`, `BadCredentialsException` | Credenciales inválidas / token ausente |
+| 403 | `AccessDeniedException` | Sin permisos para el recurso |
+| 404 | `ResourceNotFoundException` | Recurso no encontrado |
+| 409 | `DuplicateResourceException`, `DataIntegrityViolationException` | Duplicado / violación de integridad |
+| 500 | `Exception` (genérica) | Error interno no controlado |
 
 ```json
 {
