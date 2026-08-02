@@ -10,7 +10,7 @@ API RESTful para la gestión integral de una clínica veterinaria construida con
 |------------|-----------|
 | Lenguaje | Kotlin 2.2 |
 | Framework | Spring Boot 3.5 |
-| Base de datos | SQLite 3 (in-memory con `cache=shared`) |
+| Base de datos | PostgreSQL 18 (Neon DB cloud) |
 | ORM | Hibernate 6 + Spring Data JPA |
 | Autenticación | JWT (HMAC-SHA, 30 min expiración) |
 | Documentación | SpringDoc OpenAPI + Swagger UI |
@@ -105,7 +105,7 @@ password_reset_token >── usuario
 
 | Enum | Valores |
 |------|---------|
-| `TipoDocumento` | CC, CE, TI, PASAPORTE |
+| `TipoDocumento` | CC, CE, PASAPORTE |
 | `TipoServicio` | CONSULTA, ESTETICA, OTRO |
 | `SexoMascota` | MACHO, HEMBRA |
 | `EstadoCita` | PENDIENTE, CONFIRMADA, ATENDIDA, CANCELADA |
@@ -204,8 +204,8 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/servicios` | ❌ (público) | Listar (filtro opcional `?tipo=`) |
-| GET | `/servicios/{id}` | ❌ (público) | Buscar por ID |
+| GET | `/servicios` | Authenticated | Listar (filtro opcional `?tipo=`) |
+| GET | `/servicios/{id}` | Authenticated | Buscar por ID |
 | POST | `/servicios` | ADMIN | Crear |
 | PUT | `/servicios/{id}` | ADMIN | Actualizar |
 | DELETE | `/servicios/{id}` | ADMIN | Eliminar (soft) |
@@ -329,10 +329,13 @@ El `GlobalExceptionHandler` captura `ApiException` con un único handler genéri
 ```yaml
 spring:
   datasource:
-    url: jdbc:sqlite:file:vet_server_kotlin?mode=memory&cache=shared
+    url: jdbc:postgresql://${DB_HOST}/${DB_NAME}?sslmode=require
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     open-in-view: true
 
 app:
@@ -341,16 +344,27 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:30}
 ```
 
-### Datos iniciales (seed)
+### Variables de entorno requeridas
 
-Al iniciar, `DataInitializer` crea:
+| Variable | Descripción |
+|----------|-------------|
+| `DB_HOST` | Host de Neon (ej: `ep-xxx-aws.neon.tech`) |
+| `DB_NAME` | Nombre de la base (ej: `neondb`) |
+| `DB_USER` | Usuario de la base |
+| `DB_PASSWORD` | Contraseña de la base |
 
-- **1 admin**: username=`admin`, password=`admin123`, correo=`admin@veterinaria.com`
+### Datos de catálogo (seed manual)
+
+No hay `DataInitializer`: los datos base se gestionan directamente en la base de datos. Antes de usar la app se deben cargar manualmente en Neon:
+
 - **5 roles**: ADMIN, VETERINARIO, ESTILISTA, RECEPCIONISTA, CLIENTE
+- **9 módulos**: CLIENTES, MASCOTAS, CITAS, FACTURACION, HISTORIAL, USUARIOS, ROLES, TARIFAS, CALIFICACIONES
+- **Asignaciones rol_modulo**: permisos de cada rol sobre sus módulos
 - **4 cargos**: VETERINARIO, ESTILISTA, RECEPCIONISTA, ADMINISTRADOR
 - **7 servicios**: Consulta General ($50k), Consulta Especializada ($80k), Vacunación ($35k), Baño Medicado ($40k), Corte de Pelo ($35k), Limpieza Dental ($60k), Cirugía Menor ($150k)
 - **4 métodos de pago**: EFECTIVO, TARJETA_DEBITO, TARJETA_CREDITO, TRANSFERENCIA
-- **9 módulos de permiso**: CLIENTES, MASCOTAS, CITAS, FACTURACION, HISTORIAL, USUARIOS, ROLES, TARIFAS, CALIFICACIONES
+
+> Los roles, cargos, servicios y métodos de pago son obligatorios: la lógica de la app los referencia por nombre (ej: registro de usuario asigna rol `CLIENTE`, creación de empleado requiere cargo existente).
 
 ## 8. Instalación y Ejecución
 
@@ -384,7 +398,6 @@ gradle test
 src/main/kotlin/co/edu/iub/veterinaria/
 ├── VeterinariaApplication.kt
 ├── config/
-│   ├── DataInitializer.kt      # Seed data
 │   ├── JpaConfig.kt             # Auditoría JPA
 │   ├── OpenApiConfig.kt         # Swagger config
 │   └── SecurityConfig.kt        # Seguridad HTTP

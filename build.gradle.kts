@@ -32,11 +32,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    // SQLite
-    runtimeOnly("org.xerial:sqlite-jdbc:3.50.3.0")
-
-    // Hibernate Dialect para SQLite
-    implementation("org.hibernate.orm:hibernate-community-dialects")
+    // PostgreSQL (Neon DB)
+    runtimeOnly("org.postgresql:postgresql")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")

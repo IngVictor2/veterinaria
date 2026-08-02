@@ -67,7 +67,7 @@ class GlobalExceptionHandler {
             is InvalidFormatException -> {
                 val campo = cause.path.firstOrNull()?.fieldName
                 val valores = when (campo) {
-                    "tipoDocumento" -> "CC, CE, TI, PASAPORTE"
+                    "tipoDocumento" -> "CC, CE, PASAPORTE"
                     "tipoServicio" -> "CONSULTA, ESTETICA, OTRO"
                     "sexo" -> "MACHO, HEMBRA"
                     "tipoHistorial" -> "MEDICO, ESTETICA"
