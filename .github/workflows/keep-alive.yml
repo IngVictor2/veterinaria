@@ -1,0 +1,24 @@
+name: keep-alive
+
+on:
+    schedule:
+        - cron: "*/10 * * * *"
+    workflow_dispatch:
+
+jobs:
+    ping:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Ping a la API en Render
+              run: |
+                  for i in $(seq 1 6); do
+                      code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://veterinaria-cprk.onrender.com/)
+                      if [ "$code" = "200" ]; then
+                          echo "OK: HTTP $code (intento $i)"
+                          exit 0
+                      fi
+                      echo "Intento $i: HTTP $code, reintentando en 20s..."
+                      sleep 20
+                  done
+                  echo "La API no respondio despues de 6 intentos"
+                  exit 1
