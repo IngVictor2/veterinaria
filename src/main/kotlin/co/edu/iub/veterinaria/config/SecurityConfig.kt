@@ -59,7 +59,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it
                     .requestMatchers("/").permitAll()
-                    .requestMatchers("/auth/register", "/auth/login", "/auth/recuperar-password", "/auth/reset-password").permitAll()
+                    .requestMatchers("/auth/register", "/auth/login", "/auth/solicitar-recuperacion", "/auth/reset-password").permitAll()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                     .requestMatchers("/admin/**").hasRole("ADMIN")

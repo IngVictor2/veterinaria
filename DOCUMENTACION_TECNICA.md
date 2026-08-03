@@ -136,7 +136,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | POST | `/auth/login` | ❌ | Inicio de sesión → JWT |
 | POST | `/auth/logout` | ✅ | Mensaje informativo |
 | POST | `/auth/cambiar-password` | ✅ | Cambiar contraseña |
-| POST | `/auth/recuperar-password` | ❌ | Solicitar token de recuperación |
+| POST | `/auth/solicitar-recuperacion` | ❌ | Solicitar token de recuperación (se envía por correo) |
 | POST | `/auth/reset-password?token=` | ❌ | Resetear contraseña con token |
 
 ### Clientes (`/clientes`)

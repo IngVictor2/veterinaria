@@ -23,7 +23,8 @@ class AuthService(
     private val rolRepository: RolRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
     private val jwtTokenProvider: JwtTokenProvider,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val mailService: MailService
 ) {
 
     @Transactional
@@ -125,6 +126,8 @@ class AuthService(
             this.fechaExpiracion = LocalDateTime.now().plusHours(1)
         }
         passwordResetTokenRepository.save(token)
+
+        mailService.sendPasswordResetEmail(request.correo, token.token)
     }
 
     @Transactional

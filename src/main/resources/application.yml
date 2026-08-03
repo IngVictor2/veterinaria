@@ -23,6 +23,18 @@ spring:
     jackson:
         time-zone: America/Bogota
 
+    mail:
+        host: ${SMTP_HOST:smtp.gmail.com}
+        port: ${SMTP_PORT:587}
+        username: ${SMTP_USER:}
+        password: ${SMTP_PASSWORD:}
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+
 springdoc:
     api-docs:
         path: /v3/api-docs
@@ -45,3 +57,7 @@ app:
 
     cors:
         allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4200}
+
+    mail:
+        from: ${MAIL_FROM:}
+        reset-url-base: ${RESET_URL_BASE:http://localhost:5173/reset-password}
