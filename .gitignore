@@ -38,3 +38,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Scripts locales ###
+seed_data.sql
+esquema_veterinaria.sql
