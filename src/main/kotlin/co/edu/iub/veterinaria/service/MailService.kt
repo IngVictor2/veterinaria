@@ -16,28 +16,33 @@ class MailService(
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
     fun sendPasswordResetEmail(correo: String, token: String) {
-        val url = "$resetUrlBase?token=$token"
-
-        val message = SimpleMailMessage().apply {
-            setFrom(from)
-            setTo(correo)
-            subject = "Recuperacion de contrasena - Veterinaria"
-            text = """
-                Hola,
-
-                Hemos recibido una solicitud para restablecer tu contrasena.
-
-                Ingresa al siguiente enlace para crear una nueva contrasena (expira en 1 hora):
-
-                $url
-
-                Si no solicitaste este cambio, ignora este correo.
-
-                - Sistema Veterinaria
-            """.trimIndent()
+        if (from.isBlank()) {
+            log.error("MAIL_FROM no configurado; no se envio el correo de recuperacion a {}", correo)
+            return
         }
 
         try {
+            val url = "$resetUrlBase?token=$token"
+
+            val message = SimpleMailMessage().apply {
+                setFrom(from)
+                setTo(correo)
+                subject = "Recuperacion de contrasena - Veterinaria"
+                text = """
+                    Hola,
+
+                    Hemos recibido una solicitud para restablecer tu contrasena.
+
+                    Ingresa al siguiente enlace para crear una nueva contrasena (expira en 1 hora):
+
+                    $url
+
+                    Si no solicitaste este cambio, ignora este correo.
+
+                    - Sistema Veterinaria
+                """.trimIndent()
+            }
+
             mailSender.send(message)
             log.info("Correo de recuperacion enviado a {}", correo)
         } catch (e: Exception) {
