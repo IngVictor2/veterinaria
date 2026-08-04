@@ -1,6 +1,7 @@
 package co.edu.iub.veterinaria.dto.cita
 
 import co.edu.iub.veterinaria.model.EstadoCita
+import co.edu.iub.veterinaria.model.TipoServicio
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -15,6 +16,8 @@ data class CitaResponse(
     val nombreEmpleado: String,
     val idServicio: Int,
     val nombreServicio: String,
+    val tipoServicio: TipoServicio,
+    val duracionMinutos: Int,
     val fechaCita: LocalDate,
     val horaCita: LocalTime,
     val motivo: String?,

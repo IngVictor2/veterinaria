@@ -9,6 +9,7 @@ import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -31,6 +32,7 @@ class CitaService(
         )
         private val HORA_INICIO_JORNADA = LocalTime.of(7, 0)
         private val HORA_FIN_JORNADA = LocalTime.of(18, 0)
+        private val HORA_FIN_JORNADA_DOMINGO = LocalTime.of(13, 0)
     }
 
     @Transactional(readOnly = true)
@@ -204,10 +206,13 @@ class CitaService(
         }
 
         val horaFin = horaInicio.plusMinutes(duracionMinutos.toLong())
-        if (horaFin.isAfter(HORA_FIN_JORNADA)) {
+        val esDomingo = fecha.dayOfWeek == DayOfWeek.SUNDAY
+        val horaFinJornada = if (esDomingo) HORA_FIN_JORNADA_DOMINGO else HORA_FIN_JORNADA
+        if (horaFin.isAfter(horaFinJornada)) {
+            val rango = if (esDomingo) "7:00 AM - 1:00 PM" else "7:00 AM - 6:00 PM"
             throw InvalidRequestException(
-                "La cita excede el horario laboral (7:00 AM - 6:00 PM). " +
-                "La hora maxima de inicio es las ${HORA_FIN_JORNADA.minusMinutes(duracionMinutos.toLong())}."
+                "La cita excede el horario laboral ($rango). " +
+                "La hora maxima de inicio es las ${horaFinJornada.minusMinutes(duracionMinutos.toLong())}."
             )
         }
 
@@ -231,6 +236,8 @@ class CitaService(
         nombreEmpleado = "${c.empleado.primerNombre} ${c.empleado.primerApellido}",
         idServicio = c.servicio.idServicio!!,
         nombreServicio = c.servicio.nombre,
+        tipoServicio = c.servicio.tipoServicio,
+        duracionMinutos = DURACION_MINUTOS[c.servicio.tipoServicio] ?: 60,
         fechaCita = c.fechaCita,
         horaCita = c.horaCita,
         motivo = c.motivo,
