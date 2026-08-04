@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citas")
@@ -39,6 +40,10 @@ class CitaController(
     @GetMapping("/empleado/{idEmpleado}")
     fun listarPorEmpleado(@PathVariable idEmpleado: Int): List<CitaResponse> =
         citaService.listarPorEmpleado(idEmpleado)
+
+    @GetMapping("/disponibilidad/{fecha}")
+    fun disponibilidad(@PathVariable fecha: LocalDate): List<CitaResponse> =
+        citaService.listarPorFecha(fecha)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

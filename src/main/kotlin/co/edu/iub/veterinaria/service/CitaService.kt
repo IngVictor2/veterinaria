@@ -9,6 +9,8 @@ import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Service
 class CitaService(
@@ -20,6 +22,16 @@ class CitaService(
     private val servicioEsteticaRepository: ServicioEsteticaRepository,
     private val historialMascotaRepository: HistorialMascotaRepository
 ) {
+
+    companion object {
+        private val DURACION_MINUTOS = mapOf(
+            TipoServicio.CONSULTA to 30,
+            TipoServicio.ESTETICA to 60,
+            TipoServicio.OTRO to 120
+        )
+        private val HORA_INICIO_JORNADA = LocalTime.of(7, 0)
+        private val HORA_FIN_JORNADA = LocalTime.of(18, 0)
+    }
 
     @Transactional(readOnly = true)
     fun listar(): List<CitaResponse> = citaRepository.findAll().map { toResponse(it) }
@@ -43,6 +55,10 @@ class CitaService(
     fun listarPorEmpleado(idEmpleado: Int): List<CitaResponse> =
         citaRepository.findByEmpleadoIdEmpleado(idEmpleado).map { toResponse(it) }
 
+    @Transactional(readOnly = true)
+    fun listarPorFecha(fecha: LocalDate): List<CitaResponse> =
+        citaRepository.findByFechaCita(fecha).map { toResponse(it) }
+
     private val transicionesValidas = mapOf(
         EstadoCita.PENDIENTE to setOf(EstadoCita.CONFIRMADA, EstadoCita.CANCELADA),
         EstadoCita.CONFIRMADA to setOf(EstadoCita.ATENDIDA, EstadoCita.CANCELADA),
@@ -59,12 +75,9 @@ class CitaService(
         val servicio = servicioRepository.findById(request.idServicio)
             .orElseThrow { ResourceNotFoundException("Servicio no encontrado") }
 
-        val conflicto = citaRepository.findByFechaCita(request.fechaCita)
-            .any { it.empleado.idEmpleado == request.idEmpleado &&
-                    it.horaCita == request.horaCita &&
-                    it.estadoCita != EstadoCita.CANCELADA }
-        if (conflicto) {
-            throw DuplicateResourceException("El empleado ya tiene una cita en esa fecha y hora")
+        val duracion = DURACION_MINUTOS[servicio.tipoServicio] ?: 60
+        if (existeConflictoHorario(request.idEmpleado, request.fechaCita, request.horaCita, duracion)) {
+            throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
         }
 
         val cita = Cita().apply {
@@ -86,13 +99,12 @@ class CitaService(
         if (cita.estadoCita == EstadoCita.ATENDIDA || cita.estadoCita == EstadoCita.CANCELADA) {
             throw InvalidRequestException("No se puede reprogramar una cita ${cita.estadoCita}")
         }
-        val conflictos = citaRepository.findByFechaCita(request.fechaCita)
-            .any { it.idCita != id &&
-                    it.empleado.idEmpleado == request.idEmpleado &&
-                    it.horaCita == request.horaCita &&
-                    it.estadoCita != EstadoCita.CANCELADA }
-        if (conflictos) {
-            throw DuplicateResourceException("El empleado ya tiene una cita en esa fecha y hora")
+        val duracion = DURACION_MINUTOS[cita.servicio.tipoServicio] ?: 60
+        if (existeConflictoHorario(
+                request.idEmpleado, request.fechaCita, request.horaCita, duracion, excludeId = id
+            )
+        ) {
+            throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
         }
         cita.fechaCita = request.fechaCita
         cita.horaCita = request.horaCita
@@ -178,6 +190,35 @@ class CitaService(
             resumen = "Servicio estético: ${request.detalles?.take(200) ?: "Sin detalles"}"
         }
         historialMascotaRepository.save(historial)
+    }
+
+    private fun existeConflictoHorario(
+        idEmpleado: Int,
+        fecha: LocalDate,
+        horaInicio: LocalTime,
+        duracionMinutos: Int,
+        excludeId: Int? = null
+    ): Boolean {
+        if (horaInicio.isBefore(HORA_INICIO_JORNADA)) {
+            throw InvalidRequestException("La cita debe iniciar a partir de las 7:00 AM")
+        }
+
+        val horaFin = horaInicio.plusMinutes(duracionMinutos.toLong())
+        if (horaFin.isAfter(HORA_FIN_JORNADA)) {
+            throw InvalidRequestException(
+                "La cita excede el horario laboral (7:00 AM - 6:00 PM). " +
+                "La hora maxima de inicio es las ${HORA_FIN_JORNADA.minusMinutes(duracionMinutos.toLong())}."
+            )
+        }
+
+        return citaRepository
+            .findByEmpleadoIdEmpleadoAndFechaCitaAndEstadoCitaNot(idEmpleado, fecha, EstadoCita.CANCELADA)
+            .any { cita ->
+                if (excludeId != null && cita.idCita == excludeId) return@any false
+                val duracionExistente = DURACION_MINUTOS[cita.servicio.tipoServicio] ?: 60
+                val finExistente = cita.horaCita.plusMinutes(duracionExistente.toLong())
+                horaInicio.isBefore(finExistente) && horaFin.isAfter(cita.horaCita)
+            }
     }
 
     private fun toResponse(c: Cita) = CitaResponse(

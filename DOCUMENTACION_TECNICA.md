@@ -174,6 +174,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/citas/cliente/{idCliente}` | RECEP, ADMIN, VET, EST | Por cliente |
 | GET | `/citas/mascota/{idMascota}` | RECEP, ADMIN, VET, EST | Por mascota |
 | GET | `/citas/empleado/{idEmpleado}` | RECEP, ADMIN, VET, EST | Por empleado |
+| GET | `/citas/disponibilidad/{fecha}` | RECEP, ADMIN, VET, EST | Citas de una fecha (calendario) |
 | POST | `/citas` | RECEP, ADMIN, VET, EST | Crear |
 | PUT | `/citas/{id}` | RECEP, ADMIN, VET, EST | Reprogramar |
 | PATCH | `/citas/{id}/estado` | RECEP, ADMIN, VET, EST | Cambiar estado |
