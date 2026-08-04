@@ -48,6 +48,5 @@ app:
 
     mail:
         api-key: ${MAIL_API_KEY:}
-        domain: ${MAILGUN_DOMAIN:}
         from: ${MAIL_FROM:}
         reset-url-base: ${RESET_URL_BASE:http://localhost:5173/reset-password}
