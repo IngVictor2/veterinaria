@@ -4,11 +4,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
+import java.util.Base64
 
 @Service
 class MailService(
     @Value("\${app.mail.api-key}") private val apiKey: String,
+    @Value("\${app.mail.domain}") private val domain: String,
     @Value("\${app.mail.from}") private val from: String,
     @Value("\${app.mail.reset-url-base}") private val resetUrlBase: String
 ) {
@@ -16,37 +19,40 @@ class MailService(
     private val log = LoggerFactory.getLogger(MailService::class.java)
 
     private val restClient = RestClient.builder()
-        .baseUrl("https://api.brevo.com/v3")
-        .defaultHeader("api-key", apiKey)
+        .baseUrl("https://api.mailgun.net/v3")
+        .defaultHeader(
+            "Authorization",
+            "Basic " + Base64.getEncoder().encodeToString("api:$apiKey".toByteArray())
+        )
         .build()
 
     fun sendPasswordResetEmail(correo: String, token: String) {
-        if (apiKey.isBlank() || from.isBlank()) {
-            log.error("MAIL_API_KEY o MAIL_FROM no configurados; no se envio el correo de recuperacion a {}", correo)
+        if (apiKey.isBlank() || domain.isBlank() || from.isBlank()) {
+            log.error("MAIL_API_KEY, MAILGUN_DOMAIN o MAIL_FROM no configurados; no se envio el correo a {}", correo)
             return
         }
 
         try {
             val url = "$resetUrlBase?token=$token"
 
-            val body = mapOf(
-                "sender" to mapOf("email" to from, "name" to "Veterinaria"),
-                "to" to listOf(mapOf("email" to correo)),
-                "subject" to "Recuperacion de contrasena - Veterinaria",
-                "htmlContent" to """
+            val form = LinkedMultiValueMap<String, String>().apply {
+                add("from", from)
+                add("to", correo)
+                add("subject", "Recuperacion de contrasena - Veterinaria")
+                add("html", """
                     <p>Hola,</p>
                     <p>Hemos recibido una solicitud para restablecer tu contrasena.</p>
                     <p>Ingresa al siguiente enlace para crear una nueva contrasena (expira en 1 hora):</p>
                     <p><a href="$url">$url</a></p>
                     <p>Si no solicitaste este cambio, ignora este correo.</p>
                     <p>- Sistema Veterinaria</p>
-                """.trimIndent()
-            )
+                """.trimIndent())
+            }
 
             restClient.post()
-                .uri("/smtp/email")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
+                .uri("/{domain}/messages", domain)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(form)
                 .retrieve()
                 .toBodilessEntity()
 
