@@ -45,8 +45,3 @@ app:
 
     cors:
         allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4200}
-
-    mail:
-        api-key: ${MAIL_API_KEY:}
-        from: ${MAIL_FROM:}
-        reset-url-base: ${RESET_URL_BASE:http://localhost:5173/reset-password}

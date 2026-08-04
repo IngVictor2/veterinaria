@@ -39,8 +39,18 @@ class AuthController(
     }
 
     @PostMapping("/solicitar-recuperacion")
-    fun requestReset(@Valid @RequestBody request: ResetPasswordRequest) {
-        authService.requestPasswordReset(request)
+    fun requestReset(@Valid @RequestBody request: ResetPasswordRequest): Map<String, String> {
+        val token = authService.requestPasswordReset(request)
+        return if (token != null) {
+            mapOf(
+                "token" to token,
+                "mensaje" to "Token generado. En produccion se enviaria un enlace por correo."
+            )
+        } else {
+            mapOf(
+                "mensaje" to "Si el correo esta registrado, recibira un enlace para restablecer su contrasena."
+            )
+        }
     }
 
     @PostMapping("/reset-password")

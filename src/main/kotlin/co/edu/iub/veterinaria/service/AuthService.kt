@@ -23,8 +23,7 @@ class AuthService(
     private val rolRepository: RolRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
     private val jwtTokenProvider: JwtTokenProvider,
-    private val passwordEncoder: PasswordEncoder,
-    private val mailService: MailService
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     @Transactional
@@ -116,9 +115,9 @@ class AuthService(
     }
 
     @Transactional
-    fun requestPasswordReset(request: ResetPasswordRequest) {
+    fun requestPasswordReset(request: ResetPasswordRequest): String? {
         val usuario = usuarioRepository.findByCorreo(request.correo)
-            ?: return
+            ?: return null
 
         val token = PasswordResetToken().apply {
             this.usuario = usuario
@@ -127,7 +126,7 @@ class AuthService(
         }
         passwordResetTokenRepository.save(token)
 
-        mailService.sendPasswordResetEmail(request.correo, token.token)
+        return token.token
     }
 
     @Transactional
