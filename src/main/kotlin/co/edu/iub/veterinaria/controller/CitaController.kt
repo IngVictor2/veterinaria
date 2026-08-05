@@ -71,6 +71,10 @@ class CitaController(
     fun reprogramar(@PathVariable id: Int, @Valid @RequestBody request: CitaRequest): CitaResponse =
         citaService.reprogramar(id, request)
 
+    @PostMapping("/{id}/confirmar")
+    fun confirmar(@PathVariable id: Int, @Valid @RequestBody request: CitaRequest): CitaResponse =
+        citaService.confirmar(id, request)
+
     @PatchMapping("/{id}/estado")
     fun cambiarEstado(@PathVariable id: Int, @RequestBody body: Map<String, String>) {
         val estadoStr = body["estadoCita"] ?: throw InvalidRequestException("estadoCita es requerido")

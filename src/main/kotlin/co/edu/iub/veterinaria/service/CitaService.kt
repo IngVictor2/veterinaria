@@ -145,6 +145,39 @@ class CitaService(
     }
 
     @Transactional
+    fun confirmar(id: Int, request: CitaRequest): CitaResponse {
+        val cita = citaRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
+        if (cita.estadoCita == EstadoCita.ATENDIDA || cita.estadoCita == EstadoCita.CANCELADA) {
+            throw InvalidRequestException("No se puede confirmar una cita ${cita.estadoCita}")
+        }
+        if (request.idMascota != cita.mascota.idMascota) {
+            throw InvalidRequestException("La mascota de la cita no puede cambiarse")
+        }
+        val empleado = empleadoRepository.findById(request.idEmpleado!!)
+            .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
+        val servicio = servicioRepository.findById(request.idServicio)
+            .orElseThrow { ResourceNotFoundException("Servicio no encontrado") }
+
+        val duracion = DURACION_MINUTOS[servicio.tipoServicio] ?: 60
+        if (existeConflictoHorario(
+                request.idEmpleado!!, request.fechaCita, request.horaCita, duracion, excludeId = id
+            )
+        ) {
+            throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
+        }
+
+        cita.empleado = empleado
+        cita.servicio = servicio
+        cita.fechaCita = request.fechaCita
+        cita.horaCita = request.horaCita
+        cita.motivo = request.motivo
+        cita.observaciones = request.observaciones
+        cita.estadoCita = EstadoCita.CONFIRMADA
+        return toResponse(citaRepository.save(cita))
+    }
+
+    @Transactional
     fun cambiarEstado(id: Int, nuevoEstado: EstadoCita) {
         val cita = citaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
