@@ -7,6 +7,7 @@ import co.edu.iub.veterinaria.security.CurrentUserHelper
 import co.edu.iub.veterinaria.service.CitaService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -27,15 +28,25 @@ class CitaController(
     }
 
     @GetMapping("/{id}")
-    fun buscarPorId(@PathVariable id: Int): CitaResponse = citaService.buscarPorId(id)
+    fun buscarPorId(@PathVariable id: Int, authentication: Authentication): CitaResponse {
+        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        return citaService.buscarPorId(id, idCliente)
+    }
 
     @GetMapping("/cliente/{idCliente}")
-    fun listarPorCliente(@PathVariable idCliente: Int): List<CitaResponse> =
-        citaService.listarPorCliente(idCliente)
+    fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<CitaResponse> {
+        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        if (idClienteActual != null && idClienteActual != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver estas citas")
+        }
+        return citaService.listarPorCliente(idCliente)
+    }
 
     @GetMapping("/mascota/{idMascota}")
-    fun listarPorMascota(@PathVariable idMascota: Int): List<CitaResponse> =
-        citaService.listarPorMascota(idMascota)
+    fun listarPorMascota(@PathVariable idMascota: Int, authentication: Authentication): List<CitaResponse> {
+        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        return citaService.listarPorMascota(idMascota, idCliente)
+    }
 
     @GetMapping("/empleado/{idEmpleado}")
     fun listarPorEmpleado(@PathVariable idEmpleado: Int): List<CitaResponse> =

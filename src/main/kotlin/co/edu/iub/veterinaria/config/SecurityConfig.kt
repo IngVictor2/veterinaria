@@ -77,9 +77,11 @@ class SecurityConfig(
                     .requestMatchers("/mascotas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
 
                     .requestMatchers("/citas/mis-citas").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/citas/{id}", "/citas/cliente/{idCliente}", "/citas/mascota/{idMascota}").authenticated()
                     .requestMatchers("/citas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
 
                     .requestMatchers("/facturas/mis-facturas").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/facturas/{id}", "/facturas/cliente/{idCliente}").authenticated()
                     .requestMatchers(HttpMethod.POST, "/facturas/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
                     .requestMatchers("/facturas/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
 

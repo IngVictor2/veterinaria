@@ -7,6 +7,7 @@ import co.edu.iub.veterinaria.exception.InvalidStatusTransitionException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -25,9 +26,12 @@ class FacturaService(
         facturaRepository.findByClienteIdCliente(idCliente).map { toResponse(it) }
 
     @Transactional(readOnly = true)
-    fun buscarPorId(id: Int): FacturaResponse {
+    fun buscarPorId(id: Int, idCliente: Int? = null): FacturaResponse {
         val factura = facturaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Factura no encontrada") }
+        if (idCliente != null && factura.cliente.idCliente != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver esta factura")
+        }
         return toResponse(factura)
     }
 

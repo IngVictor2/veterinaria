@@ -7,6 +7,7 @@ import co.edu.iub.veterinaria.exception.InvalidStatusTransitionException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.DayOfWeek
@@ -39,9 +40,12 @@ class CitaService(
     fun listar(): List<CitaResponse> = citaRepository.findAll().map { toResponse(it) }
 
     @Transactional(readOnly = true)
-    fun buscarPorId(id: Int): CitaResponse {
+    fun buscarPorId(id: Int, idCliente: Int? = null): CitaResponse {
         val cita = citaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Cita no encontrada") }
+        if (idCliente != null && cita.mascota.cliente.idCliente != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver esta cita")
+        }
         return toResponse(cita)
     }
 
@@ -50,8 +54,16 @@ class CitaService(
         citaRepository.findByMascotaClienteIdCliente(idCliente).map { toResponse(it) }
 
     @Transactional(readOnly = true)
-    fun listarPorMascota(idMascota: Int): List<CitaResponse> =
-        citaRepository.findByMascotaIdMascota(idMascota).map { toResponse(it) }
+    fun listarPorMascota(idMascota: Int, idCliente: Int? = null): List<CitaResponse> {
+        if (idCliente != null) {
+            val mascota = mascotaRepository.findById(idMascota)
+                .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
+            if (mascota.cliente.idCliente != idCliente) {
+                throw AccessDeniedException("No tiene permisos para ver las citas de esta mascota")
+            }
+        }
+        return citaRepository.findByMascotaIdMascota(idMascota).map { toResponse(it) }
+    }
 
     @Transactional(readOnly = true)
     fun listarPorEmpleado(idEmpleado: Int): List<CitaResponse> =

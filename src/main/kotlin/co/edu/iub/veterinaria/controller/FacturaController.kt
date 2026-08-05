@@ -8,6 +8,7 @@ import co.edu.iub.veterinaria.security.CurrentUserHelper
 import co.edu.iub.veterinaria.service.FacturaService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -27,11 +28,19 @@ class FacturaController(
     }
 
     @GetMapping("/{id}")
-    fun buscarPorId(@PathVariable id: Int): FacturaResponse = facturaService.buscarPorId(id)
+    fun buscarPorId(@PathVariable id: Int, authentication: Authentication): FacturaResponse {
+        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        return facturaService.buscarPorId(id, idCliente)
+    }
 
     @GetMapping("/cliente/{idCliente}")
-    fun listarPorCliente(@PathVariable idCliente: Int): List<FacturaResponse> =
-        facturaService.listarPorCliente(idCliente)
+    fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<FacturaResponse> {
+        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        if (idClienteActual != null && idClienteActual != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver estas facturas")
+        }
+        return facturaService.listarPorCliente(idCliente)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
