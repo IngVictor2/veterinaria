@@ -133,7 +133,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | POST | `/auth/register` | ❌ | Registro de cliente |
-| POST | `/auth/login` | ❌ | Inicio de sesión → JWT |
+| POST | `/auth/login` | ❌ | Inicio de sesión → JWT + roles + modulos (desde `rol_modulo`) |
 | POST | `/auth/logout` | ✅ | Mensaje informativo |
 | POST | `/auth/cambiar-password` | ✅ | Cambiar contraseña |
 | POST | `/auth/solicitar-recuperacion` | ❌ | Solicitar token de recuperación (se devuelve en la respuesta; sin envío por correo) |

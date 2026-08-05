@@ -23,7 +23,8 @@ class AuthService(
     private val rolRepository: RolRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
     private val jwtTokenProvider: JwtTokenProvider,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val rolModuloRepository: RolModuloRepository
 ) {
 
     @Transactional
@@ -60,6 +61,9 @@ class AuthService(
         usuarioRolRepository.save(usuarioRol)
 
         val roles = listOf("CLIENTE")
+        val modulos = rolModuloRepository.findByRolIdRolAndEstadoTrue(rolCliente.idRol!!)
+            .map { it.modulo.nombre }
+            .distinct()
         val token = jwtTokenProvider.generateToken(usuario.idUsuario!!, usuario.nombreUsuario, roles)
 
         return AuthResponse(
@@ -67,7 +71,8 @@ class AuthService(
             idUsuario = usuario.idUsuario!!,
             nombreUsuario = usuario.nombreUsuario,
             correo = cliente.correo!!,
-            roles = roles
+            roles = roles,
+            modulos = modulos
         )
     }
 
@@ -83,9 +88,14 @@ class AuthService(
             throw InvalidCredentialsException("Credenciales inválidas")
         }
 
-        val rolesActivos = usuarioRolRepository
+        val usuarioRolesActivos = usuarioRolRepository
             .findByUsuarioIdUsuarioAndEstadoTrue(usuario.idUsuario!!)
-            .map { it.rol.nombre }
+
+        val rolesActivos = usuarioRolesActivos.map { it.rol.nombre }
+        val modulos = usuarioRolesActivos
+            .flatMap { rolModuloRepository.findByRolIdRolAndEstadoTrue(it.rol.idRol!!) }
+            .map { it.modulo.nombre }
+            .distinct()
 
         val correo = usuarioRepository.findCorreoByIdUsuario(usuario.idUsuario!!)
             ?: ""
@@ -97,7 +107,8 @@ class AuthService(
             idUsuario = usuario.idUsuario!!,
             nombreUsuario = usuario.nombreUsuario,
             correo = correo,
-            roles = rolesActivos
+            roles = rolesActivos,
+            modulos = modulos
         )
     }
 

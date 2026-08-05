@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface RolModuloRepository : JpaRepository<RolModulo, Int> {
     fun findByRolIdRol(idRol: Int): List<RolModulo>
+    fun findByRolIdRolAndEstadoTrue(idRol: Int): List<RolModulo>
     fun existsByRolIdRolAndModuloIdModulo(idRol: Int, idModulo: Int): Boolean
 }
