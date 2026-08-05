@@ -7,6 +7,7 @@ import co.edu.iub.veterinaria.model.RolModulo
 import co.edu.iub.veterinaria.repository.ModuloRepository
 import co.edu.iub.veterinaria.repository.RolModuloRepository
 import co.edu.iub.veterinaria.repository.RolRepository
+import co.edu.iub.veterinaria.security.ModuleAuthorizationManager
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.*
 class ModuloPermisosController(
     private val rolModuloRepository: RolModuloRepository,
     private val rolRepository: RolRepository,
-    private val moduloRepository: ModuloRepository
+    private val moduloRepository: ModuloRepository,
+    private val moduleAuthorizationManager: ModuleAuthorizationManager
 ) {
     @GetMapping("/rol/{idRol}")
     fun listarPorRol(@PathVariable idRol: Int): List<RolModuloResponse> =
@@ -38,10 +40,14 @@ class ModuloPermisosController(
                 .firstOrNull { it.modulo.idModulo == idModulo }
                 ?: throw ResourceNotFoundException("Permiso previo no encontrado")
             existente.estado = true
-            return rolModuloRepository.save(existente).toResponse()
+            rolModuloRepository.save(existente)
+            moduleAuthorizationManager.invalidar()
+            return existente.toResponse()
         }
 
-        return rolModuloRepository.save(RolModulo().apply { this.rol = rol; this.modulo = modulo }).toResponse()
+        val nuevo = rolModuloRepository.save(RolModulo().apply { this.rol = rol; this.modulo = modulo })
+        moduleAuthorizationManager.invalidar()
+        return nuevo.toResponse()
     }
 
     @DeleteMapping("/{idRol}/{idModulo}")
@@ -53,6 +59,7 @@ class ModuloPermisosController(
             ?: throw ResourceNotFoundException("Permiso no encontrado")
         permiso.estado = false
         rolModuloRepository.save(permiso)
+        moduleAuthorizationManager.invalidar()
     }
 
     private fun RolModulo.toResponse() = RolModuloResponse(

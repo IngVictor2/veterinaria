@@ -1,6 +1,7 @@
 package co.edu.iub.veterinaria.config
 
 import co.edu.iub.veterinaria.security.JwtAuthenticationFilter
+import co.edu.iub.veterinaria.security.ModuleAuthorizationManager
 import co.edu.iub.veterinaria.security.RestAccessDeniedHandler
 import co.edu.iub.veterinaria.security.RestAuthenticationEntryPoint
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -23,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val objectMapper: ObjectMapper,
+    private val moduleAuthorizationManager: ModuleAuthorizationManager,
     @Value("\${app.cors.allowed-origins}") private val allowedOrigins: List<String>
 ) {
 
@@ -63,31 +65,31 @@ class SecurityConfig(
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                     .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/empleados/**").hasRole("ADMIN")
+                    .requestMatchers("/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
                     .requestMatchers(HttpMethod.GET, "/servicios/**").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/servicios/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/servicios/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/servicios/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))
+                    .requestMatchers(HttpMethod.PUT, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))
+                    .requestMatchers(HttpMethod.DELETE, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))
 
                     .requestMatchers("/clientes/me").authenticated()
-                    .requestMatchers("/clientes/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
+                    .requestMatchers("/clientes/**").access(moduleAuthorizationManager.hasModule("CLIENTES"))
 
                     .requestMatchers("/mascotas/mis-mascotas").authenticated()
                     .requestMatchers(HttpMethod.GET, "/mascotas/{id}", "/mascotas/cliente/{idCliente}").authenticated()
-                    .requestMatchers("/mascotas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
+                    .requestMatchers("/mascotas/**").access(moduleAuthorizationManager.hasModule("MASCOTAS"))
 
                     .requestMatchers("/citas/mis-citas").authenticated()
                     .requestMatchers(HttpMethod.POST, "/citas").authenticated()
                     .requestMatchers(HttpMethod.GET, "/citas/{id}", "/citas/cliente/{idCliente}", "/citas/mascota/{idMascota}", "/citas/bloques/{fecha}").authenticated()
-                    .requestMatchers("/citas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
+                    .requestMatchers("/citas/**").access(moduleAuthorizationManager.hasModule("CITAS"))
 
                     .requestMatchers("/facturas/mis-facturas").authenticated()
                     .requestMatchers(HttpMethod.GET, "/facturas/{id}", "/facturas/cliente/{idCliente}").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/facturas/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
-                    .requestMatchers("/facturas/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/facturas/**").access(moduleAuthorizationManager.hasModule("FACTURACION"))
+                    .requestMatchers("/facturas/**").access(moduleAuthorizationManager.hasModule("FACTURACION"))
 
-                    .requestMatchers("/pagos/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
-                    .requestMatchers("/historial/**").hasAnyRole("VETERINARIO", "ESTILISTA", "ADMIN")
+                    .requestMatchers("/pagos/**").access(moduleAuthorizationManager.hasModule("FACTURACION"))
+                    .requestMatchers("/historial/**").access(moduleAuthorizationManager.hasModule("HISTORIAL"))
                     .requestMatchers("/calificaciones/**").authenticated()
 
                     .anyRequest().authenticated()
