@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 
 interface UsuarioRepository : JpaRepository<Usuario, Int> {
-    fun findByNombreUsuario(nombreUsuario: String): Usuario?
 
     @Query("""
         SELECT u FROM Usuario u
