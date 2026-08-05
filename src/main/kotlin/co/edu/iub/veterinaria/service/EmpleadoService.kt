@@ -69,6 +69,15 @@ class EmpleadoService(
         }
         usuarioRepository.save(usuario)
 
+        val nombreRol = cargo.nombre.uppercase()
+        val rol = rolRepository.findByNombre(nombreRol)
+        if (rol != null && !usuarioRolRepository.existsByUsuarioIdUsuarioAndRolIdRol(usuario.idUsuario!!, rol.idRol!!)) {
+            usuarioRolRepository.save(UsuarioRol().apply {
+                this.usuario = usuario
+                this.rol = rol
+            })
+    }
+
         return toResponse(empleado)
     }
 
