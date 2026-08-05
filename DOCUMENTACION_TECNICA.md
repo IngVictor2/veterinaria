@@ -176,7 +176,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/citas/empleado/{idEmpleado}` | RECEP, ADMIN, VET, EST | Por empleado |
 | GET | `/citas/disponibilidad/{fecha}` | RECEP, ADMIN, VET, EST | Citas de una fecha (calendario) |
 | GET | `/citas/bloques/{fecha}` | Authenticated | Bloques ocupados de una fecha (sin datos personales; para clientes) |
-| POST | `/citas` | Authenticated | Crear (un cliente solo puede agendar con su propia mascota) |
+| POST | `/citas` | Authenticated | Crear (idEmpleado opcional: sin empleado queda PENDIENTE; el cliente solo agenda su propia mascota) |
 | PUT | `/citas/{id}` | RECEP, ADMIN, VET, EST | Reprogramar (fecha/hora; no cambia empleado) |
 | POST | `/citas/{id}/confirmar` | RECEP, ADMIN, VET, EST | Confirmar cita: ajusta empleado, servicio, fecha y hora y la deja CONFIRMADA |
 | PATCH | `/citas/{id}/estado` | RECEP, ADMIN, VET, EST | Cambiar estado |

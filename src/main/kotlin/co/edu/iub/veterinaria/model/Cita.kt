@@ -21,8 +21,8 @@ class Cita : BaseEntity() {
     lateinit var mascota: Mascota
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_empleado", nullable = false)
-    lateinit var empleado: Empleado
+    @JoinColumn(name = "id_empleado")
+    var empleado: Empleado? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_servicio", nullable = false)

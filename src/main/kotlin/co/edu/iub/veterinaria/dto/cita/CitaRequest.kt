@@ -6,7 +6,7 @@ import java.time.LocalTime
 
 data class CitaRequest(
     @field:NotNull val idMascota: Int,
-    @field:NotNull val idEmpleado: Int,
+    val idEmpleado: Int? = null,
     @field:NotNull val idServicio: Int,
     @field:NotNull val fechaCita: LocalDate,
     @field:NotNull val horaCita: LocalTime,

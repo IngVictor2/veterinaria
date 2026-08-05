@@ -76,14 +76,15 @@ class CitaService(
     @Transactional(readOnly = true)
     fun listarBloquesOcupados(fecha: LocalDate): List<BloqueOcupadoResponse> =
         citaRepository.findByFechaCita(fecha)
-            .filter { it.estadoCita != EstadoCita.CANCELADA }
+            .filter { it.estadoCita != EstadoCita.CANCELADA && it.empleado != null }
             .map {
+                val empleado = it.empleado!!
                 BloqueOcupadoResponse(
                     horaInicio = it.horaCita,
                     duracionMinutos = DURACION_MINUTOS[it.servicio.tipoServicio] ?: 60,
                     tipoServicio = it.servicio.tipoServicio,
-                    idEmpleado = it.empleado.idEmpleado!!,
-                    nombreEmpleado = "${it.empleado.primerNombre} ${it.empleado.primerApellido}"
+                    idEmpleado = empleado.idEmpleado!!,
+                    nombreEmpleado = "${empleado.primerNombre} ${empleado.primerApellido}"
                 )
             }
 
@@ -101,14 +102,18 @@ class CitaService(
         if (idCliente != null && mascota.cliente.idCliente != idCliente) {
             throw AccessDeniedException("No tiene permisos para agendar una cita con esta mascota")
         }
-        val empleado = empleadoRepository.findById(request.idEmpleado)
-            .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
+        val empleado = request.idEmpleado?.let { idEmpleado ->
+            empleadoRepository.findById(idEmpleado)
+                .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
+        }
         val servicio = servicioRepository.findById(request.idServicio)
             .orElseThrow { ResourceNotFoundException("Servicio no encontrado") }
 
-        val duracion = DURACION_MINUTOS[servicio.tipoServicio] ?: 60
-        if (existeConflictoHorario(request.idEmpleado, request.fechaCita, request.horaCita, duracion)) {
-            throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
+        if (empleado != null) {
+            val duracion = DURACION_MINUTOS[servicio.tipoServicio] ?: 60
+            if (existeConflictoHorario(request.idEmpleado!!, request.fechaCita, request.horaCita, duracion)) {
+                throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
+            }
         }
 
         val cita = Cita().apply {
@@ -131,8 +136,10 @@ class CitaService(
             throw InvalidRequestException("No se puede reprogramar una cita ${cita.estadoCita}")
         }
         val duracion = DURACION_MINUTOS[cita.servicio.tipoServicio] ?: 60
+        val idEmpleado = request.idEmpleado ?: cita.empleado?.idEmpleado
+            ?: throw InvalidRequestException("Se requiere un empleado para reprogramar la cita")
         if (existeConflictoHorario(
-                request.idEmpleado, request.fechaCita, request.horaCita, duracion, excludeId = id
+                idEmpleado, request.fechaCita, request.horaCita, duracion, excludeId = id
             )
         ) {
             throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
@@ -154,14 +161,16 @@ class CitaService(
         if (request.idMascota != cita.mascota.idMascota) {
             throw InvalidRequestException("La mascota de la cita no puede cambiarse")
         }
-        val empleado = empleadoRepository.findById(request.idEmpleado!!)
+        val idEmpleado = request.idEmpleado
+            ?: throw InvalidRequestException("Se requiere asignar un empleado para confirmar la cita")
+        val empleado = empleadoRepository.findById(idEmpleado)
             .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
         val servicio = servicioRepository.findById(request.idServicio)
             .orElseThrow { ResourceNotFoundException("Servicio no encontrado") }
 
         val duracion = DURACION_MINUTOS[servicio.tipoServicio] ?: 60
         if (existeConflictoHorario(
-                request.idEmpleado!!, request.fechaCita, request.horaCita, duracion, excludeId = id
+                idEmpleado, request.fechaCita, request.horaCita, duracion, excludeId = id
             )
         ) {
             throw DuplicateResourceException("El empleado ya tiene una cita en ese horario")
@@ -294,8 +303,8 @@ class CitaService(
         nombreMascota = c.mascota.nombre,
         idCliente = c.mascota.cliente.idCliente!!,
         nombreCliente = "${c.mascota.cliente.primerNombre} ${c.mascota.cliente.primerApellido}",
-        idEmpleado = c.empleado.idEmpleado!!,
-        nombreEmpleado = "${c.empleado.primerNombre} ${c.empleado.primerApellido}",
+        idEmpleado = c.empleado?.idEmpleado,
+        nombreEmpleado = c.empleado?.let { "${it.primerNombre} ${it.primerApellido}" },
         idServicio = c.servicio.idServicio!!,
         nombreServicio = c.servicio.nombre,
         tipoServicio = c.servicio.tipoServicio,
