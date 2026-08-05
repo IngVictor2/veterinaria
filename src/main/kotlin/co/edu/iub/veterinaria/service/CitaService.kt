@@ -73,6 +73,20 @@ class CitaService(
     fun listarPorFecha(fecha: LocalDate): List<CitaResponse> =
         citaRepository.findByFechaCita(fecha).map { toResponse(it) }
 
+    @Transactional(readOnly = true)
+    fun listarBloquesOcupados(fecha: LocalDate): List<BloqueOcupadoResponse> =
+        citaRepository.findByFechaCita(fecha)
+            .filter { it.estadoCita != EstadoCita.CANCELADA }
+            .map {
+                BloqueOcupadoResponse(
+                    horaInicio = it.horaCita,
+                    duracionMinutos = DURACION_MINUTOS[it.servicio.tipoServicio] ?: 60,
+                    tipoServicio = it.servicio.tipoServicio,
+                    idEmpleado = it.empleado.idEmpleado!!,
+                    nombreEmpleado = "${it.empleado.primerNombre} ${it.empleado.primerApellido}"
+                )
+            }
+
     private val transicionesValidas = mapOf(
         EstadoCita.PENDIENTE to setOf(EstadoCita.CONFIRMADA, EstadoCita.CANCELADA),
         EstadoCita.CONFIRMADA to setOf(EstadoCita.ATENDIDA, EstadoCita.CANCELADA),
@@ -81,9 +95,12 @@ class CitaService(
     )
 
     @Transactional
-    fun crear(request: CitaRequest): CitaResponse {
+    fun crear(request: CitaRequest, idCliente: Int? = null): CitaResponse {
         val mascota = mascotaRepository.findById(request.idMascota)
             .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
+        if (idCliente != null && mascota.cliente.idCliente != idCliente) {
+            throw AccessDeniedException("No tiene permisos para agendar una cita con esta mascota")
+        }
         val empleado = empleadoRepository.findById(request.idEmpleado)
             .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
         val servicio = servicioRepository.findById(request.idServicio)

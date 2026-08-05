@@ -56,10 +56,16 @@ class CitaController(
     fun disponibilidad(@PathVariable fecha: LocalDate): List<CitaResponse> =
         citaService.listarPorFecha(fecha)
 
+    @GetMapping("/bloques/{fecha}")
+    fun bloquesOcupados(@PathVariable fecha: LocalDate): List<BloqueOcupadoResponse> =
+        citaService.listarBloquesOcupados(fecha)
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun crear(@Valid @RequestBody request: CitaRequest): CitaResponse =
-        citaService.crear(request)
+    fun crear(authentication: Authentication, @Valid @RequestBody request: CitaRequest): CitaResponse {
+        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        return citaService.crear(request, idCliente)
+    }
 
     @PutMapping("/{id}")
     fun reprogramar(@PathVariable id: Int, @Valid @RequestBody request: CitaRequest): CitaResponse =

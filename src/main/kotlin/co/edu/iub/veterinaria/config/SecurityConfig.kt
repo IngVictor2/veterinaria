@@ -77,7 +77,8 @@ class SecurityConfig(
                     .requestMatchers("/mascotas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
 
                     .requestMatchers("/citas/mis-citas").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/citas/{id}", "/citas/cliente/{idCliente}", "/citas/mascota/{idMascota}").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/citas").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/citas/{id}", "/citas/cliente/{idCliente}", "/citas/mascota/{idMascota}", "/citas/bloques/{fecha}").authenticated()
                     .requestMatchers("/citas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
 
                     .requestMatchers("/facturas/mis-facturas").authenticated()
