@@ -6,6 +6,7 @@ import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.Mascota
 import co.edu.iub.veterinaria.repository.ClienteRepository
 import co.edu.iub.veterinaria.repository.MascotaRepository
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,9 +22,12 @@ class MascotaService(
     }
 
     @Transactional(readOnly = true)
-    fun buscarPorId(id: Int): MascotaResponse {
+    fun buscarPorId(id: Int, idCliente: Int? = null): MascotaResponse {
         val mascota = mascotaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
+        if (idCliente != null && mascota.cliente.idCliente != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver esta mascota")
+        }
         return toResponse(mascota)
     }
 

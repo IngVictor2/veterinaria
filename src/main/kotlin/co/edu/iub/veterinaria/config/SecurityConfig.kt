@@ -73,6 +73,7 @@ class SecurityConfig(
                     .requestMatchers("/clientes/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
 
                     .requestMatchers("/mascotas/mis-mascotas").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/mascotas/{id}", "/mascotas/cliente/{idCliente}").authenticated()
                     .requestMatchers("/mascotas/**").hasAnyRole("RECEPCIONISTA", "ADMIN", "VETERINARIO", "ESTILISTA")
 
                     .requestMatchers("/citas/mis-citas").authenticated()

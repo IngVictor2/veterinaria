@@ -6,6 +6,7 @@ import co.edu.iub.veterinaria.security.CurrentUserHelper
 import co.edu.iub.veterinaria.service.MascotaService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -25,11 +26,19 @@ class MascotaController(
     }
 
     @GetMapping("/{id}")
-    fun buscarPorId(@PathVariable id: Int): MascotaResponse = mascotaService.buscarPorId(id)
+    fun buscarPorId(@PathVariable id: Int, authentication: Authentication): MascotaResponse {
+        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        return mascotaService.buscarPorId(id, idCliente)
+    }
 
     @GetMapping("/cliente/{idCliente}")
-    fun listarPorCliente(@PathVariable idCliente: Int): List<MascotaResponse> =
-        mascotaService.listarPorCliente(idCliente)
+    fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<MascotaResponse> {
+        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        if (idClienteActual != null && idClienteActual != idCliente) {
+            throw AccessDeniedException("No tiene permisos para ver estas mascotas")
+        }
+        return mascotaService.listarPorCliente(idCliente)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
