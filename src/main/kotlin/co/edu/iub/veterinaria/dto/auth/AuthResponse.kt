@@ -6,6 +6,5 @@ data class AuthResponse(
     val idUsuario: Int,
     val nombreUsuario: String,
     val correo: String,
-    val roles: List<String>,
-    val modulos: List<String>
+    val roles: List<String>
 )
