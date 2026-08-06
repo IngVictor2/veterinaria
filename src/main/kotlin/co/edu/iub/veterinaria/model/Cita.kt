@@ -5,10 +5,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @Entity
-@Table(
-    name = "cita",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["id_empleado", "fecha_cita", "hora_cita"])]
-)
+@Table(name = "cita")
 class Cita : BaseEntity() {
 
     @Id
