@@ -32,6 +32,9 @@ class AuthService(
         if (clienteRepository.existsByCorreo(request.email)) {
             throw DuplicateResourceException("El correo ya está registrado")
         }
+        if (clienteRepository.existsByNumeroDocumento(request.numeroDocumento)) {
+            throw DuplicateResourceException("El número de documento ya está registrado")
+        }
 
         val cliente = Cliente().apply {
             tipoDocumento = request.tipoDocumento
@@ -41,6 +44,7 @@ class AuthService(
             primerApellido = request.primerApellido
             segundoApellido = request.segundoApellido
             telefono = request.telefono
+            direccion = request.direccion
             correo = request.email
         }
         clienteRepository.save(cliente)
