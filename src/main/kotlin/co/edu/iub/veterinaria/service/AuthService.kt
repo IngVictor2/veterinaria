@@ -130,9 +130,9 @@ class AuthService(
     }
 
     @Transactional
-    fun cambiarPasswordAdmin(idUsuario: Int, nuevaPassword: String) {
-        val usuario = usuarioRepository.findById(idUsuario)
-            .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
+    fun cambiarPasswordAdmin(correo: String, nuevaPassword: String) {
+        val usuario = usuarioRepository.findByCorreo(correo)
+            ?: throw ResourceNotFoundException("Usuario no encontrado")
         usuario.passwordHash = passwordEncoder.encode(nuevaPassword)
         usuarioRepository.save(usuario)
     }

@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*
 class AdminPasswordController(
     private val authService: AuthService
 ) {
-    @PostMapping("/{idUsuario}/password")
+    @PostMapping("/{correo}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun cambiarPassword(@PathVariable idUsuario: Int, @Valid @RequestBody request: AdminPasswordRequest) {
-        authService.cambiarPasswordAdmin(idUsuario, request.nuevaPassword)
+    fun cambiarPassword(@PathVariable correo: String, @Valid @RequestBody request: AdminPasswordRequest) {
+        authService.cambiarPasswordAdmin(correo, request.nuevaPassword)
     }
 }
