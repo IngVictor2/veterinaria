@@ -233,7 +233,7 @@ class CitaService(
             this.cita = cita
             this.consulta = consulta
             tipoHistorial = TipoHistorial.MEDICO
-            resumen = "Consulta médica: ${request.sintomas.take(200)}"
+            resumen = "Consulta médica: ${request.sintomas}"
         }
         historialMascotaRepository.save(historial)
     }
@@ -260,7 +260,7 @@ class CitaService(
             this.cita = cita
             this.servicioEstetica = estetica
             tipoHistorial = TipoHistorial.ESTETICA
-            resumen = "Servicio estético: ${request.detalles?.take(200) ?: "Sin detalles"}"
+            resumen = "Servicio estético: ${request.detalles ?: "Sin detalles"}"
         }
         historialMascotaRepository.save(historial)
     }
