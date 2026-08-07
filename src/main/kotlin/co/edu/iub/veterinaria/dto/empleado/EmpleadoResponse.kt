@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 
 data class EmpleadoResponse(
     val idEmpleado: Int,
+    val idUsuario: Int?,
     val idCargo: Int,
     val nombreCargo: String,
     val tipoDocumento: TipoDocumento,

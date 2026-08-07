@@ -147,6 +147,7 @@ class EmpleadoService(
 
         return EmpleadoResponse(
             idEmpleado = e.idEmpleado!!,
+            idUsuario = usuario?.idUsuario,
             idCargo = e.cargo.idCargo!!,
             nombreCargo = e.cargo.nombre,
             tipoDocumento = e.tipoDocumento,
