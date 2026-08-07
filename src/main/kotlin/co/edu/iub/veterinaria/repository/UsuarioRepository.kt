@@ -21,4 +21,7 @@ interface UsuarioRepository : JpaRepository<Usuario, Int> {
     fun findCorreoByIdUsuario(idUsuario: Int): String?
 
     fun findByEmpleadoIdEmpleado(idEmpleado: Int): Usuario?
+
+    @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.cliente c LEFT JOIN FETCH u.empleado e")
+    fun findAllConDetalle(): List<Usuario>
 }

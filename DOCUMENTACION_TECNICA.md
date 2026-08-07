@@ -232,6 +232,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | `GET /cargos` | Authenticated | Lista cargos (VETERINARIO, ESTILISTA, etc.) |
 | `GET /metodos-pago` | Authenticated | Lista métodos de pago (EFECTIVO, TARJETA, TRANSFERENCIA) |
 | `GET /modulos` | Authenticated | Lista módulos de permiso (CLIENTES, CITAS, etc.) |
+| `GET /admin/usuarios` | ADMIN | Lista todas las cuentas (empleados y clientes) con idUsuario, correo, roles, tipoCuenta, cargo, estado |
 | `POST /admin/usuarios/{idUsuario}/password` | ADMIN | Admin cambia la contraseña de un usuario (body: `nuevaPassword` min 8) |
 
 ### Calificaciones (`/calificaciones`) — Authenticated
