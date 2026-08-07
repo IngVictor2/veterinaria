@@ -13,4 +13,16 @@ class CurrentUserHelper(
         val usuario = usuarioRepository.findById(idUsuario).orElse(null) ?: return null
         return usuario.cliente?.idCliente
     }
+
+    fun getClienteIdContextual(authentication: Authentication): Int? =
+        if (esPersonal(authentication)) null else getClienteIdOrNull(authentication)
+
+    fun esPersonal(authentication: Authentication): Boolean =
+        authentication.authorities.any { it.authority in ROLES_PERSONAL }
+
+    companion object {
+        private val ROLES_PERSONAL = setOf(
+            "ROLE_ADMIN", "ROLE_VETERINARIO", "ROLE_ESTILISTA", "ROLE_RECEPCIONISTA"
+        )
+    }
 }

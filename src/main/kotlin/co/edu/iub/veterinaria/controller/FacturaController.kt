@@ -29,13 +29,13 @@ class FacturaController(
 
     @GetMapping("/{id}")
     fun buscarPorId(@PathVariable id: Int, authentication: Authentication): FacturaResponse {
-        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        val idCliente = currentUserHelper.getClienteIdContextual(authentication)
         return facturaService.buscarPorId(id, idCliente)
     }
 
     @GetMapping("/cliente/{idCliente}")
     fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<FacturaResponse> {
-        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        val idClienteActual = currentUserHelper.getClienteIdContextual(authentication)
         if (idClienteActual != null && idClienteActual != idCliente) {
             throw AccessDeniedException("No tiene permisos para ver estas facturas")
         }

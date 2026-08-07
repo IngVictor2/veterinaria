@@ -29,13 +29,13 @@ class CitaController(
 
     @GetMapping("/{id}")
     fun buscarPorId(@PathVariable id: Int, authentication: Authentication): CitaResponse {
-        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        val idCliente = currentUserHelper.getClienteIdContextual(authentication)
         return citaService.buscarPorId(id, idCliente)
     }
 
     @GetMapping("/cliente/{idCliente}")
     fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<CitaResponse> {
-        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        val idClienteActual = currentUserHelper.getClienteIdContextual(authentication)
         if (idClienteActual != null && idClienteActual != idCliente) {
             throw AccessDeniedException("No tiene permisos para ver estas citas")
         }
@@ -44,7 +44,7 @@ class CitaController(
 
     @GetMapping("/mascota/{idMascota}")
     fun listarPorMascota(@PathVariable idMascota: Int, authentication: Authentication): List<CitaResponse> {
-        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        val idCliente = currentUserHelper.getClienteIdContextual(authentication)
         return citaService.listarPorMascota(idMascota, idCliente)
     }
 
@@ -63,7 +63,7 @@ class CitaController(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun crear(authentication: Authentication, @Valid @RequestBody request: CitaRequest): CitaResponse {
-        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        val idCliente = currentUserHelper.getClienteIdContextual(authentication)
         return citaService.crear(request, idCliente)
     }
 

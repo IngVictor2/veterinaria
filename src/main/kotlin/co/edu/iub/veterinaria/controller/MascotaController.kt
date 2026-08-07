@@ -27,13 +27,13 @@ class MascotaController(
 
     @GetMapping("/{id}")
     fun buscarPorId(@PathVariable id: Int, authentication: Authentication): MascotaResponse {
-        val idCliente = currentUserHelper.getClienteIdOrNull(authentication)
+        val idCliente = currentUserHelper.getClienteIdContextual(authentication)
         return mascotaService.buscarPorId(id, idCliente)
     }
 
     @GetMapping("/cliente/{idCliente}")
     fun listarPorCliente(@PathVariable idCliente: Int, authentication: Authentication): List<MascotaResponse> {
-        val idClienteActual = currentUserHelper.getClienteIdOrNull(authentication)
+        val idClienteActual = currentUserHelper.getClienteIdContextual(authentication)
         if (idClienteActual != null && idClienteActual != idCliente) {
             throw AccessDeniedException("No tiene permisos para ver estas mascotas")
         }

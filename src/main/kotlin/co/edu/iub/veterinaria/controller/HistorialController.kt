@@ -23,7 +23,7 @@ class HistorialController(
         @PathVariable idMascota: Int,
         authentication: Authentication
     ): List<HistorialResponse> {
-        val clienteId = currentUserHelper.getClienteIdOrNull(authentication)
+        val clienteId = currentUserHelper.getClienteIdContextual(authentication)
         if (clienteId != null) {
             val mascota = mascotaRepository.findById(idMascota)
                 .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
