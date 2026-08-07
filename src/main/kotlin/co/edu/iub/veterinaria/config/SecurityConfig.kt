@@ -65,7 +65,10 @@ class SecurityConfig(
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                     .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
+                    .requestMatchers(HttpMethod.GET, "/empleados", "/empleados/{id}").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
+                    .requestMatchers(HttpMethod.PUT, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
+                    .requestMatchers(HttpMethod.DELETE, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
                     .requestMatchers(HttpMethod.GET, "/servicios/**").authenticated()
                     .requestMatchers(HttpMethod.POST, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))
                     .requestMatchers(HttpMethod.PUT, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))
