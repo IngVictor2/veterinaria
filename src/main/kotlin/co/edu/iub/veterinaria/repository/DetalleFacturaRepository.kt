@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface DetalleFacturaRepository : JpaRepository<DetalleFactura, Int> {
     fun findByFacturaIdFactura(idFactura: Int): List<DetalleFactura>
+    fun findByCitaIdCita(idCita: Int): DetalleFactura?
 }

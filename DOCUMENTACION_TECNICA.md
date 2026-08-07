@@ -186,13 +186,15 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 
 ### Facturas (`/facturas`)
 
+> **Regla automática:** al atender una cita (→ `ATENDIDA`) el backend genera la factura `PENDIENTE` con el servicio de la cita y su precio; si la cita se cancela, su factura pasa automáticamente a `ANULADA`. El pago sigue siendo manual (caja).
+
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
 | GET | `/facturas` | RECEP, ADMIN | Listar todas |
 | GET | `/facturas/mis-facturas` | Authenticated | Mis facturas |
 | GET | `/facturas/{id}` | RECEP, ADMIN | Buscar por ID |
 | GET | `/facturas/cliente/{idCliente}` | RECEP, ADMIN | Por cliente |
-| POST | `/facturas` | RECEP, ADMIN | Crear |
+| POST | `/facturas` | RECEP, ADMIN | Crear (409 si una cita ya fue facturada) |
 | PATCH | `/facturas/{id}/estado` | RECEP, ADMIN | Cambiar estado (PENDIENTE→PAGADA/ANULADA) |
 
 ### Pagos (`/pagos`) — RECEPCIONISTA, ADMIN

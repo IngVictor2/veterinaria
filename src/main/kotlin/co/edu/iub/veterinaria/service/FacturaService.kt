@@ -3,6 +3,7 @@ package co.edu.iub.veterinaria.service
 import co.edu.iub.veterinaria.dto.factura.FacturaDetalleResponse
 import co.edu.iub.veterinaria.dto.factura.FacturaRequest
 import co.edu.iub.veterinaria.dto.factura.FacturaResponse
+import co.edu.iub.veterinaria.exception.DuplicateResourceException
 import co.edu.iub.veterinaria.exception.InvalidStatusTransitionException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.*
@@ -39,6 +40,12 @@ class FacturaService(
     fun crear(request: FacturaRequest): FacturaResponse {
         val cliente = clienteRepository.findById(request.idCliente)
             .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
+
+        request.items.forEach { item ->
+            if (detalleFacturaRepository.findByCitaIdCita(item.idCita) != null) {
+                throw DuplicateResourceException("La cita ${item.idCita} ya está facturada")
+            }
+        }
 
         val factura = Factura().apply {
             this.cliente = cliente
@@ -77,6 +84,37 @@ class FacturaService(
     @Transactional(readOnly = true)
     fun listar(): List<FacturaResponse> =
         facturaRepository.findAll().map { toResponse(it) }
+
+    @Transactional
+    fun generarPorAtencion(cita: Cita) {
+        if (detalleFacturaRepository.findByCitaIdCita(cita.idCita!!) != null) {
+            return
+        }
+        val servicio = cita.servicio
+        val factura = Factura().apply {
+            cliente = cita.mascota.cliente
+            subtotal = servicio.precio
+            descuento = BigDecimal.ZERO
+            total = servicio.precio
+        }
+        facturaRepository.save(factura)
+        detalleFacturaRepository.save(DetalleFactura().apply {
+            this.factura = factura
+            this.cita = cita
+            this.servicio = servicio
+            cantidad = 1
+            precio = servicio.precio
+        })
+    }
+
+    @Transactional
+    fun anularPorCita(idCita: Int) {
+        val factura = detalleFacturaRepository.findByCitaIdCita(idCita)?.factura ?: return
+        if (factura.estadoFactura != EstadoFactura.ANULADA) {
+            factura.estadoFactura = EstadoFactura.ANULADA
+            facturaRepository.save(factura)
+        }
+    }
 
     private val transicionesFactura = mapOf(
         EstadoFactura.PENDIENTE to setOf(EstadoFactura.PAGADA, EstadoFactura.ANULADA),

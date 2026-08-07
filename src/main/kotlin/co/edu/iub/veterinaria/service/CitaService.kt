@@ -22,7 +22,8 @@ class CitaService(
     private val servicioRepository: ServicioRepository,
     private val consultaMedicaRepository: ConsultaMedicaRepository,
     private val servicioEsteticaRepository: ServicioEsteticaRepository,
-    private val historialMascotaRepository: HistorialMascotaRepository
+    private val historialMascotaRepository: HistorialMascotaRepository,
+    private val facturaService: FacturaService
 ) {
 
     companion object {
@@ -200,6 +201,11 @@ class CitaService(
         }
         cita.estadoCita = nuevoEstado
         citaRepository.save(cita)
+        when (nuevoEstado) {
+            EstadoCita.ATENDIDA -> facturaService.generarPorAtencion(cita)
+            EstadoCita.CANCELADA -> facturaService.anularPorCita(cita.idCita!!)
+            else -> {}
+        }
     }
 
     @Transactional
