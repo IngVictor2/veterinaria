@@ -213,15 +213,15 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | PUT | `/servicios/{id}` | ADMIN | Actualizar |
 | DELETE | `/servicios/{id}` | ADMIN | Eliminar (soft) |
 
-### Empleados (`/empleados`) — ADMIN
+### Empleados (`/empleados`) — GET autenticado, escritura USUARIOS
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/empleados` | Listar todos |
-| GET | `/empleados/{id}` | Buscar por ID |
-| POST | `/empleados` | Crear (con usuario) |
-| PUT | `/empleados/{id}` | Actualizar |
-| DELETE | `/empleados/{id}` | Eliminar (soft) |
+| GET | `/empleados` | Listar todos (cualquier autenticado) |
+| GET | `/empleados/{id}` | Buscar por ID (cualquier autenticado) |
+| POST | `/empleados` | Crear (con usuario) — módulo USUARIOS |
+| PUT | `/empleados/{id}` | Actualizar — módulo USUARIOS |
+| DELETE | `/empleados/{id}` | Eliminar (soft) — módulo USUARIOS |
 
 ### Catálogos — Referencias
 
