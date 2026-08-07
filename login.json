@@ -1,0 +1,1 @@
+{"timestamp":"2026-08-06T23:53:30.59348126","status":400,"error":"Bad Request","message":"El cuerpo de la solicitud contiene datos inválidos.","path":"/auth/login"}

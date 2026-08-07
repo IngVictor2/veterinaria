@@ -89,6 +89,7 @@ class SecurityConfig(
                     .requestMatchers("/facturas/**").access(moduleAuthorizationManager.hasModule("FACTURACION"))
 
                     .requestMatchers("/pagos/**").access(moduleAuthorizationManager.hasModule("FACTURACION"))
+                    .requestMatchers(HttpMethod.GET, "/historial/mascota/{idMascota}").authenticated()
                     .requestMatchers("/historial/**").access(moduleAuthorizationManager.hasModule("HISTORIAL"))
                     .requestMatchers("/calificaciones/**").authenticated()
 
