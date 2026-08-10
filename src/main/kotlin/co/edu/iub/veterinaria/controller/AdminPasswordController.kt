@@ -1,5 +1,6 @@
 package co.edu.iub.veterinaria.controller
 
+import co.edu.iub.veterinaria.dto.admin.AdminEstadoRequest
 import co.edu.iub.veterinaria.dto.admin.AdminPasswordRequest
 import co.edu.iub.veterinaria.dto.admin.UsuarioResponse
 import co.edu.iub.veterinaria.repository.UsuarioRolRepository
@@ -7,6 +8,7 @@ import co.edu.iub.veterinaria.repository.UsuarioRepository
 import co.edu.iub.veterinaria.service.AuthService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
@@ -45,5 +47,15 @@ class AdminPasswordController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun cambiarPassword(@PathVariable idUsuario: Int, @Valid @RequestBody request: AdminPasswordRequest) {
         authService.cambiarPasswordAdmin(idUsuario, request.nuevaPassword)
+    }
+
+    @PatchMapping("/{idUsuario}/estado")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun cambiarEstado(
+        @PathVariable idUsuario: Int,
+        @Valid @RequestBody request: AdminEstadoRequest,
+        authentication: Authentication
+    ) {
+        authService.cambiarEstadoCuenta(idUsuario, request.estado, authentication.principal as Int)
     }
 }

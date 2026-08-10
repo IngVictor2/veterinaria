@@ -1,5 +1,6 @@
 package co.edu.iub.veterinaria.controller
 
+import co.edu.iub.veterinaria.dto.admin.AdminEstadoRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteProfileRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteRequest
 import co.edu.iub.veterinaria.dto.cliente.ClienteResponse
@@ -80,5 +81,15 @@ class ClienteController(
     ) {
 
         clienteService.eliminar(id)
+    }
+
+    @PatchMapping("/{id}/estado")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun cambiarEstado(
+        @PathVariable id: Int,
+        @Valid @RequestBody request: AdminEstadoRequest,
+        authentication: Authentication
+    ) {
+        clienteService.cambiarEstado(id, request.estado, authentication.principal as Int)
     }
 }

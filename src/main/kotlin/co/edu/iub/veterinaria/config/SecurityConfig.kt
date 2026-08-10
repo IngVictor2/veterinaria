@@ -68,6 +68,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/empleados", "/empleados/{id}").authenticated()
                     .requestMatchers(HttpMethod.POST, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
                     .requestMatchers(HttpMethod.PUT, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
+                    .requestMatchers(HttpMethod.PATCH, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
                     .requestMatchers(HttpMethod.DELETE, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
                     .requestMatchers(HttpMethod.GET, "/servicios/**").authenticated()
                     .requestMatchers(HttpMethod.POST, "/servicios/**").access(moduleAuthorizationManager.hasModule("TARIFAS"))

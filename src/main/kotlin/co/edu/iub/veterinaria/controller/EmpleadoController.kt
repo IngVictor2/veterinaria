@@ -1,10 +1,12 @@
 package co.edu.iub.veterinaria.controller
 
+import co.edu.iub.veterinaria.dto.admin.AdminEstadoRequest
 import co.edu.iub.veterinaria.dto.empleado.EmpleadoRequest
 import co.edu.iub.veterinaria.dto.empleado.EmpleadoResponse
 import co.edu.iub.veterinaria.service.EmpleadoService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -30,4 +32,12 @@ class EmpleadoController(
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun eliminar(@PathVariable id: Int) = empleadoService.eliminar(id)
+
+    @PatchMapping("/{id}/estado")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun cambiarEstado(
+        @PathVariable id: Int,
+        @Valid @RequestBody request: AdminEstadoRequest,
+        authentication: Authentication
+    ) = empleadoService.cambiarEstado(id, request.estado, authentication.principal as Int)
 }

@@ -18,7 +18,8 @@ class EmpleadoService(
     private val usuarioRepository: UsuarioRepository,
     private val usuarioRolRepository: UsuarioRolRepository,
     private val rolRepository: RolRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val authService: AuthService
 ) {
 
     @Transactional(readOnly = true)
@@ -136,6 +137,11 @@ class EmpleadoService(
             .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
         empleado.estado = false
         empleadoRepository.save(empleado)
+    }
+
+    @Transactional
+    fun cambiarEstado(id: Int, estado: Boolean, idAdminActual: Int) {
+        authService.cambiarEstadoPorEmpleado(id, estado, idAdminActual)
     }
 
     private fun toResponse(e: Empleado): EmpleadoResponse {

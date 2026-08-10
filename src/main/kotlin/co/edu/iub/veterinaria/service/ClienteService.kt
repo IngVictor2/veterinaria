@@ -23,7 +23,8 @@ class ClienteService(
     private val usuarioRepository: UsuarioRepository,
     private val usuarioRolRepository: UsuarioRolRepository,
     private val rolRepository: RolRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val authService: AuthService
 ) {
 
     @Transactional(readOnly = true)
@@ -119,6 +120,11 @@ class ClienteService(
         cliente.estado = false
 
         clienteRepository.save(cliente)
+    }
+
+    @Transactional
+    fun cambiarEstado(id: Int, estado: Boolean, idAdminActual: Int) {
+        authService.cambiarEstadoPorCliente(id, estado, idAdminActual)
     }
 
     @Transactional(readOnly = true)

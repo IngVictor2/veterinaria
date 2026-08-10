@@ -24,7 +24,8 @@ class AuthService(
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder,
-    private val rolModuloRepository: RolModuloRepository
+    private val rolModuloRepository: RolModuloRepository,
+    private val mascotaRepository: MascotaRepository
 ) {
 
     @Transactional
@@ -134,6 +135,59 @@ class AuthService(
         val usuario = usuarioRepository.findById(idUsuario)
             .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
         usuario.passwordHash = passwordEncoder.encode(nuevaPassword)
+        usuarioRepository.save(usuario)
+    }
+
+    @Transactional
+    fun cambiarEstadoCuenta(idUsuario: Int, estado: Boolean, idAdminActual: Int) {
+        val usuario = usuarioRepository.findById(idUsuario)
+            .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
+        if (!estado && idUsuario == idAdminActual) {
+            throw InvalidRequestException("No puedes desactivar tu propia cuenta")
+        }
+        aplicarEstado(usuario, estado)
+    }
+
+    @Transactional
+    fun cambiarEstadoPorCliente(idCliente: Int, estado: Boolean, idAdminActual: Int) {
+        val cliente = clienteRepository.findById(idCliente)
+            .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
+        val usuario = usuarioRepository.findByClienteIdCliente(idCliente)
+        if (!estado && usuario?.idUsuario == idAdminActual) {
+            throw InvalidRequestException("No puedes desactivar tu propia cuenta")
+        }
+        if (usuario != null) {
+            aplicarEstado(usuario, estado)
+        } else {
+            cliente.estado = estado
+            mascotaRepository.findByClienteIdCliente(idCliente).forEach { it.estado = estado }
+            clienteRepository.save(cliente)
+        }
+    }
+
+    @Transactional
+    fun cambiarEstadoPorEmpleado(idEmpleado: Int, estado: Boolean, idAdminActual: Int) {
+        val empleado = empleadoRepository.findById(idEmpleado)
+            .orElseThrow { ResourceNotFoundException("Empleado no encontrado") }
+        val usuario = usuarioRepository.findByEmpleadoIdEmpleado(idEmpleado)
+        if (usuario != null) {
+            if (!estado && usuario.idUsuario == idAdminActual) {
+                throw InvalidRequestException("No puedes desactivar tu propia cuenta")
+            }
+            aplicarEstado(usuario, estado)
+        } else {
+            empleado.estado = estado
+            empleadoRepository.save(empleado)
+        }
+    }
+
+    private fun aplicarEstado(usuario: Usuario, estado: Boolean) {
+        usuario.estado = estado
+        usuario.cliente?.let { c ->
+            c.estado = estado
+            mascotaRepository.findByClienteIdCliente(c.idCliente!!).forEach { it.estado = estado }
+        }
+        usuario.empleado?.let { it.estado = estado }
         usuarioRepository.save(usuario)
     }
 

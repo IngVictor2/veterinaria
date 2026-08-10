@@ -151,6 +151,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | POST | `/clientes` | RECEP, ADMIN | Crear |
 | PUT | `/clientes/{id}` | RECEP, ADMIN | Actualizar |
 | DELETE | `/clientes/{id}` | RECEP, ADMIN | Eliminar (soft) |
+| PATCH | `/clientes/{id}/estado` | RECEP, ADMIN | Activar/desactivar cliente + sus mascotas + su cuenta (cascada) |
 
 ### Mascotas (`/mascotas`)
 
@@ -223,6 +224,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/empleados/{id}` | Buscar por ID (cualquier autenticado) |
 | POST | `/empleados` | Crear (con usuario) — módulo USUARIOS |
 | PUT | `/empleados/{id}` | Actualizar — módulo USUARIOS |
+| PATCH | `/empleados/{id}/estado` | Activar/desactivar empleado + su cuenta (cascada) — módulo USUARIOS |
 | DELETE | `/empleados/{id}` | Eliminar (soft) — módulo USUARIOS |
 
 ### Catálogos — Referencias
@@ -233,6 +235,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | `GET /metodos-pago` | Authenticated | Lista métodos de pago (EFECTIVO, TARJETA, TRANSFERENCIA) |
 | `GET /modulos` | Authenticated | Lista módulos de permiso (CLIENTES, CITAS, etc.) |
 | `GET /admin/usuarios` | ADMIN | Lista todas las cuentas (empleados y clientes) con idUsuario, correo, roles, tipoCuenta, cargo, estado |
+| `PATCH /admin/usuarios/{idUsuario}/estado` | ADMIN | Activar/desactivar cuenta + cliente/empleado + mascotas (cascada); no permite desactivarse a sí mismo |
 | `POST /admin/usuarios/{idUsuario}/password` | ADMIN | Admin cambia la contraseña de un usuario (body: `nuevaPassword` min 8) |
 
 ### Calificaciones (`/calificaciones`) — Authenticated
