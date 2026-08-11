@@ -9,6 +9,7 @@ import co.edu.iub.veterinaria.model.*
 import co.edu.iub.veterinaria.repository.*
 import co.edu.iub.veterinaria.security.JwtTokenProvider
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -139,9 +140,12 @@ class AuthService(
     }
 
     @Transactional
-    fun cambiarEstadoCuenta(idUsuario: Int, estado: Boolean, idAdminActual: Int) {
+    fun cambiarEstadoCuenta(idUsuario: Int, estado: Boolean, idAdminActual: Int, esAdmin: Boolean) {
         val usuario = usuarioRepository.findById(idUsuario)
             .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
+        if (!esAdmin && usuario.empleado != null) {
+            throw AccessDeniedException("No tiene permisos para cambiar el estado de cuentas de empleados")
+        }
         if (!estado && idUsuario == idAdminActual) {
             throw InvalidRequestException("No puedes desactivar tu propia cuenta")
         }

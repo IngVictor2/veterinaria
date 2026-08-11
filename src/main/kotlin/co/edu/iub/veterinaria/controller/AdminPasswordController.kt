@@ -21,8 +21,10 @@ class AdminPasswordController(
 ) {
     @Transactional(readOnly = true)
     @GetMapping
-    fun listar(): List<UsuarioResponse> =
-        usuarioRepository.findAllConDetalle().map { u ->
+    fun listar(authentication: Authentication): List<UsuarioResponse> =
+        usuarioRepository.findAllConDetalle()
+            .filter { esAdmin(authentication) || it.empleado == null }
+            .map { u ->
             val idUsuario = u.idUsuario!!
             UsuarioResponse(
                 idUsuario = idUsuario,
@@ -56,6 +58,11 @@ class AdminPasswordController(
         @Valid @RequestBody request: AdminEstadoRequest,
         authentication: Authentication
     ) {
-        authService.cambiarEstadoCuenta(idUsuario, request.estado, authentication.principal as Int)
+        authService.cambiarEstadoCuenta(
+            idUsuario, request.estado, authentication.principal as Int, esAdmin(authentication)
+        )
     }
+
+    private fun esAdmin(authentication: Authentication): Boolean =
+        authentication.authorities.any { it.authority == "ROLE_ADMIN" }
 }
