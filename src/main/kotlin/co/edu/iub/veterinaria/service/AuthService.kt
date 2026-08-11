@@ -140,11 +140,11 @@ class AuthService(
     }
 
     @Transactional
-    fun cambiarEstadoCuenta(idUsuario: Int, estado: Boolean, idAdminActual: Int, esAdmin: Boolean) {
+    fun cambiarEstadoCuenta(idUsuario: Int, estado: Boolean, idAdminActual: Int, puedeGestionarEmpleados: Boolean) {
         val usuario = usuarioRepository.findById(idUsuario)
             .orElseThrow { ResourceNotFoundException("Usuario no encontrado") }
-        if (!esAdmin && usuario.empleado != null) {
-            throw AccessDeniedException("No tiene permisos para cambiar el estado de cuentas de empleados")
+        if (!puedeGestionarEmpleados && usuario.empleado != null) {
+            throw AccessDeniedException("No tiene permisos para cambiar el estado de cuentas de empleados (requiere módulo USUARIOS)")
         }
         if (!estado && idUsuario == idAdminActual) {
             throw InvalidRequestException("No puedes desactivar tu propia cuenta")

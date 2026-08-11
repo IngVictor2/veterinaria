@@ -5,6 +5,7 @@ import co.edu.iub.veterinaria.dto.admin.AdminPasswordRequest
 import co.edu.iub.veterinaria.dto.admin.UsuarioResponse
 import co.edu.iub.veterinaria.repository.UsuarioRolRepository
 import co.edu.iub.veterinaria.repository.UsuarioRepository
+import co.edu.iub.veterinaria.security.ModuleAuthorizationManager
 import co.edu.iub.veterinaria.service.AuthService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -17,33 +18,36 @@ import org.springframework.web.bind.annotation.*
 class AdminPasswordController(
     private val authService: AuthService,
     private val usuarioRepository: UsuarioRepository,
-    private val usuarioRolRepository: UsuarioRolRepository
+    private val usuarioRolRepository: UsuarioRolRepository,
+    private val moduleAuthorizationManager: ModuleAuthorizationManager
 ) {
     @Transactional(readOnly = true)
     @GetMapping
-    fun listar(authentication: Authentication): List<UsuarioResponse> =
-        usuarioRepository.findAllConDetalle()
-            .filter { esAdmin(authentication) || it.empleado == null }
+    fun listar(authentication: Authentication): List<UsuarioResponse> {
+        val puedeGestionarEmpleados = moduleAuthorizationManager.tieneModulo(authentication, "USUARIOS")
+        return usuarioRepository.findAllConDetalle()
+            .filter { puedeGestionarEmpleados || it.empleado == null }
             .map { u ->
-            val idUsuario = u.idUsuario!!
-            UsuarioResponse(
-                idUsuario = idUsuario,
-                nombreUsuario = u.nombreUsuario,
-                correo = u.cliente?.correo ?: u.empleado?.correo,
-                nombreCompleto = u.cliente?.let { "${it.primerNombre} ${it.primerApellido}" }
-                    ?: u.empleado?.let { "${it.primerNombre} ${it.primerApellido}" }
-                    ?: "Sin persona asociada",
-                tipoCuenta = if (u.empleado != null) "EMPLEADO" else "CLIENTE",
-                idCliente = u.cliente?.idCliente,
-                idEmpleado = u.empleado?.idEmpleado,
-                cargo = u.empleado?.cargo?.nombre,
-                roles = usuarioRolRepository.findByUsuarioIdUsuarioAndEstadoTrue(idUsuario)
-                    .map { it.rol.nombre },
-                estado = u.estado,
-                createdAt = u.createdAt,
-                updatedAt = u.updatedAt
-            )
-        }
+                val idUsuario = u.idUsuario!!
+                UsuarioResponse(
+                    idUsuario = idUsuario,
+                    nombreUsuario = u.nombreUsuario,
+                    correo = u.cliente?.correo ?: u.empleado?.correo,
+                    nombreCompleto = u.cliente?.let { "${it.primerNombre} ${it.primerApellido}" }
+                        ?: u.empleado?.let { "${it.primerNombre} ${it.primerApellido}" }
+                        ?: "Sin persona asociada",
+                    tipoCuenta = if (u.empleado != null) "EMPLEADO" else "CLIENTE",
+                    idCliente = u.cliente?.idCliente,
+                    idEmpleado = u.empleado?.idEmpleado,
+                    cargo = u.empleado?.cargo?.nombre,
+                    roles = usuarioRolRepository.findByUsuarioIdUsuarioAndEstadoTrue(idUsuario)
+                        .map { it.rol.nombre },
+                    estado = u.estado,
+                    createdAt = u.createdAt,
+                    updatedAt = u.updatedAt
+                )
+            }
+    }
 
     @PostMapping("/{idUsuario}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -59,10 +63,10 @@ class AdminPasswordController(
         authentication: Authentication
     ) {
         authService.cambiarEstadoCuenta(
-            idUsuario, request.estado, authentication.principal as Int, esAdmin(authentication)
+            idUsuario,
+            request.estado,
+            authentication.principal as Int,
+            moduleAuthorizationManager.tieneModulo(authentication, "USUARIOS")
         )
     }
-
-    private fun esAdmin(authentication: Authentication): Boolean =
-        authentication.authorities.any { it.authority == "ROLE_ADMIN" }
 }

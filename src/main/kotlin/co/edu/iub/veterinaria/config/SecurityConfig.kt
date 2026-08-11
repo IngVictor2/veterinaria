@@ -64,8 +64,8 @@ class SecurityConfig(
                     .requestMatchers("/auth/register", "/auth/login", "/auth/solicitar-recuperacion", "/auth/reset-password").permitAll()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                    .requestMatchers(HttpMethod.GET, "/admin/usuarios").access(moduleAuthorizationManager.hasModule("CLIENTES"))
-                    .requestMatchers(HttpMethod.PATCH, "/admin/usuarios/*/estado").access(moduleAuthorizationManager.hasModule("CLIENTES"))
+                    .requestMatchers(HttpMethod.GET, "/admin/usuarios").access(moduleAuthorizationManager.hasAnyModule("CLIENTES", "USUARIOS"))
+                    .requestMatchers(HttpMethod.PATCH, "/admin/usuarios/*/estado").access(moduleAuthorizationManager.hasAnyModule("CLIENTES", "USUARIOS"))
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/empleados", "/empleados/{id}").authenticated()
                     .requestMatchers(HttpMethod.POST, "/empleados/**").access(moduleAuthorizationManager.hasModule("USUARIOS"))
