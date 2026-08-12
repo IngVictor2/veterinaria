@@ -182,7 +182,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | POST | `/citas/{id}/confirmar` | RECEP, ADMIN, VET, EST | Confirmar cita: ajusta empleado, servicio, fecha y hora y la deja CONFIRMADA |
 | PATCH | `/citas/{id}/estado` | RECEP, ADMIN, VET, EST | Cambiar estado |
 | POST | `/citas/{id}/cancelar` | RECEP, ADMIN, VET, EST | Cancelar |
-| POST | `/citas/consulta` | RECEP, ADMIN, VET, EST | Registrar consulta médica |
+| POST | `/citas/consulta` | RECEP, ADMIN, VET, EST | Registrar consulta médica (peso 0.01–500 kg, temperatura 30–45 °C) |
 | POST | `/citas/estetica` | RECEP, ADMIN, VET, EST | Registrar servicio estético |
 
 ### Facturas (`/facturas`)
