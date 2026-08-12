@@ -22,6 +22,9 @@ class Usuario : BaseEntity() {
     @Column(name = "nombre_usuario", nullable = false, unique = true, length = 50)
     lateinit var nombreUsuario: String
 
+    @Column(name = "correo", length = 100, unique = true)
+    var correo: String? = null
+
     @Column(name = "password_hash", nullable = false, length = 255)
     lateinit var passwordHash: String
 }

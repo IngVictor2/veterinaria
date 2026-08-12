@@ -32,7 +32,7 @@ class AdminPasswordController(
                 UsuarioResponse(
                     idUsuario = idUsuario,
                     nombreUsuario = u.nombreUsuario,
-                    correo = u.cliente?.correo ?: u.empleado?.correo,
+                    correo = u.correo ?: u.cliente?.correo ?: u.empleado?.correo,
                     nombreCompleto = u.cliente?.let { "${it.primerNombre} ${it.primerApellido}" }
                         ?: u.empleado?.let { "${it.primerNombre} ${it.primerApellido}" }
                         ?: "Sin persona asociada",

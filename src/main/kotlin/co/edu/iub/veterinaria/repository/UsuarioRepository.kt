@@ -10,13 +10,13 @@ interface UsuarioRepository : JpaRepository<Usuario, Int> {
         SELECT u FROM Usuario u
         LEFT JOIN FETCH u.cliente c
         LEFT JOIN FETCH u.empleado e
-        WHERE c.correo = :correo OR e.correo = :correo
+        WHERE u.correo = :correo OR c.correo = :correo OR e.correo = :correo
     """)
     fun findByCorreo(correo: String): Usuario?
 
     fun existsByNombreUsuario(nombreUsuario: String): Boolean
 
-    @Query("SELECT COALESCE(c.correo, e.correo) FROM Usuario u " +
+    @Query("SELECT COALESCE(u.correo, c.correo, e.correo) FROM Usuario u " +
            "LEFT JOIN u.cliente c LEFT JOIN u.empleado e WHERE u.idUsuario = :idUsuario")
     fun findCorreoByIdUsuario(idUsuario: Int): String?
 

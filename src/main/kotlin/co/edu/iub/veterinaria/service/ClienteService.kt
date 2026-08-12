@@ -85,13 +85,13 @@ class ClienteService(
             throw DuplicateResourceException("Ya existe ese número de documento")
         }
 
-        request.correo?.let { correo ->
+        val nuevoCorreo = request.correo?.trim()
 
-            if (correo != cliente.correo &&
-                clienteRepository.existsByCorreo(correo)
-            ) {
-                throw DuplicateResourceException("Ya existe ese correo")
-            }
+        if (nuevoCorreo != null &&
+            nuevoCorreo != cliente.correo &&
+            clienteRepository.existsByCorreo(nuevoCorreo)
+        ) {
+            throw DuplicateResourceException("Ya existe ese correo")
         }
 
         cliente.apply {
@@ -102,7 +102,7 @@ class ClienteService(
             primerApellido = request.primerApellido
             segundoApellido = request.segundoApellido
             telefono = request.telefono
-            correo = request.correo
+            correo = nuevoCorreo
             direccion = request.direccion
         }
 
@@ -144,9 +144,16 @@ class ClienteService(
             ?: throw ResourceNotFoundException("El usuario no está asociado a un cliente")
 
         request.correo?.let { correo ->
-            if (correo != cliente.correo && clienteRepository.existsByCorreo(correo)) {
+            val nuevoCorreo = correo.trim().ifEmpty { null }
+
+            if (nuevoCorreo != null &&
+                nuevoCorreo != cliente.correo &&
+                clienteRepository.existsByCorreo(nuevoCorreo)
+            ) {
                 throw DuplicateResourceException("Ya existe ese correo")
             }
+
+            cliente.correo = nuevoCorreo
         }
 
         cliente.apply {
@@ -155,7 +162,6 @@ class ClienteService(
             request.primerApellido?.let { primerApellido = it }
             request.segundoApellido?.let { segundoApellido = it }
             request.telefono?.let { telefono = it }
-            request.correo?.let { correo = it }
             request.direccion?.let { direccion = it }
         }
 
@@ -167,11 +173,13 @@ class ClienteService(
         val cliente = clienteRepository.findById(idCliente)
             .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
 
-        if (usuarioRepository.findByCorreo(request.email) != null) {
+        val emailFinal = request.email.trim()
+
+        if (usuarioRepository.findByCorreo(emailFinal) != null) {
             throw DuplicateResourceException("El correo ya está registrado")
         }
 
-        val nombreUsuario = request.nombreUsuario ?: request.email.substringBefore("@")
+        val nombreUsuario = request.nombreUsuario ?: emailFinal.substringBefore("@")
         if (usuarioRepository.existsByNombreUsuario(nombreUsuario)) {
             throw DuplicateResourceException("El nombre de usuario ya existe")
         }
@@ -179,6 +187,7 @@ class ClienteService(
         val usuario = Usuario().apply {
             this.cliente = cliente
             this.nombreUsuario = nombreUsuario
+            correo = emailFinal
             passwordHash = passwordEncoder.encode(request.password)
         }
         usuarioRepository.save(usuario)
@@ -193,7 +202,7 @@ class ClienteService(
         return mapOf(
             "idUsuario" to usuario.idUsuario!!,
             "nombreUsuario" to usuario.nombreUsuario,
-            "correo" to request.email,
+            "correo" to emailFinal,
             "mensaje" to "Usuario creado exitosamente para el cliente"
         )
     }

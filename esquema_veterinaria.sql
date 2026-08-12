@@ -99,11 +99,14 @@ CREATE TABLE empleado (
 );
 
 -- TABLA: usuario (asociado a cliente O empleado; roles en usuario_rol) -> RF-002, RF-010
+-- correo: correo de ACCESO de la cuenta (independiente del correo de contacto del
+-- cliente/empleado; este ultimo puede cambiarse o vaciarse sin afectar el login)
 CREATE TABLE usuario (
     id_usuario SERIAL PRIMARY KEY,
     id_cliente INTEGER,
     id_empleado INTEGER,
     nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    correo VARCHAR(100) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     estado BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -330,9 +333,9 @@ CREATE TABLE calificacion (
     CONSTRAINT chk_calificacion_puntuacion CHECK(puntuacion BETWEEN 1 AND 5)
 );
 
--- VISTA: v_usuario_correo (correo derivado de cliente o empleado) -> RF-002, RF-004
+-- VISTA: v_usuario_correo (correo de acceso: propio de usuario, o derivado de cliente/empleado) -> RF-002, RF-004
 CREATE VIEW v_usuario_correo AS
-SELECT u.id_usuario, u.nombre_usuario, COALESCE(c.correo, e.correo) AS correo
+SELECT u.id_usuario, u.nombre_usuario, COALESCE(u.correo, c.correo, e.correo) AS correo
 FROM usuario u
 LEFT JOIN cliente c ON u.id_cliente = c.id_cliente
 LEFT JOIN empleado e ON u.id_empleado = e.id_empleado;
@@ -404,6 +407,31 @@ CREATE TRIGGER trg_calificacion_cita_atendida
 BEFORE INSERT ON calificacion
 FOR EACH ROW
 EXECUTE FUNCTION check_cita_atendida_para_calificar();
+
+-- ==========================================================
+-- MIGRACION PRODUCCION: correo de acceso en usuario
+-- Ejecutar SOLO sobre bases existentes (instalaciones nuevas ya
+-- incluyen la columna en CREATE TABLE usuario).
+-- OJO: el ADD COLUMN ... UNIQUE fallara si ya existen correos
+-- duplicados entre cliente y empleado; deduplicar antes.
+-- ==========================================================
+ALTER TABLE usuario ADD COLUMN correo VARCHAR(100) UNIQUE;
+
+UPDATE usuario u SET correo = c.correo
+FROM cliente c
+WHERE c.id_cliente = u.id_cliente AND u.correo IS NULL;
+
+UPDATE usuario u SET correo = e.correo
+FROM empleado e
+WHERE e.id_empleado = u.id_empleado AND u.correo IS NULL;
+
+ALTER VIEW v_usuario_correo RENAME TO v_usuario_correo_old;
+CREATE VIEW v_usuario_correo AS
+SELECT u.id_usuario, u.nombre_usuario, COALESCE(u.correo, c.correo, e.correo) AS correo
+FROM usuario u
+LEFT JOIN cliente c ON u.id_cliente = c.id_cliente
+LEFT JOIN empleado e ON u.id_empleado = e.id_empleado;
+DROP VIEW v_usuario_correo_old;
 
 -- NOTA sobre RF-009 (cuenta de acceso obligatoria por empleado):
 -- la regla queda como responsabilidad de la capa de aplicacion: el flujo de

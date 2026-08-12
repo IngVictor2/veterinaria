@@ -66,6 +66,7 @@ class EmpleadoService(
         val usuario = Usuario().apply {
             this.empleado = empleado
             nombreUsuario = request.nombreUsuario
+            correo = request.correo
             passwordHash = passwordEncoder.encode(request.password ?: throw InvalidRequestException("La contraseña es obligatoria"))
         }
         usuarioRepository.save(usuario)
