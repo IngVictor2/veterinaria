@@ -38,7 +38,10 @@ class MascotaService(
     }
 
     @Transactional
-    fun crear(request: MascotaRequest, idClienteContextual: Int? = null): MascotaResponse {
+    fun crear(request: MascotaRequest, idClienteContextual: Int? = null, puedeGestionarFichas: Boolean = false): MascotaResponse {
+        if (idClienteContextual == null && !puedeGestionarFichas) {
+            throw AccessDeniedException("Solo recepción o admin pueden crear fichas de mascotas")
+        }
         if (idClienteContextual != null && request.idCliente != idClienteContextual) {
             throw AccessDeniedException("No tiene permisos para crear mascotas para otro cliente")
         }
@@ -67,10 +70,13 @@ class MascotaService(
     }
 
     @Transactional
-    fun actualizar(id: Int, request: MascotaRequest, idClienteContextual: Int? = null): MascotaResponse {
+    fun actualizar(id: Int, request: MascotaRequest, idClienteContextual: Int? = null, puedeGestionarFichas: Boolean = false): MascotaResponse {
         val mascota = mascotaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
 
+        if (idClienteContextual == null && !puedeGestionarFichas) {
+            throw AccessDeniedException("Solo recepción o admin pueden editar fichas de mascotas")
+        }
         if (idClienteContextual != null && mascota.cliente.idCliente != idClienteContextual) {
             throw AccessDeniedException("No tiene permisos para editar esta mascota")
         }

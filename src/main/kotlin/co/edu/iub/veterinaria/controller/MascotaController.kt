@@ -3,6 +3,7 @@ package co.edu.iub.veterinaria.controller
 import co.edu.iub.veterinaria.dto.mascota.MascotaRequest
 import co.edu.iub.veterinaria.dto.mascota.MascotaResponse
 import co.edu.iub.veterinaria.security.CurrentUserHelper
+import co.edu.iub.veterinaria.security.ModuleAuthorizationManager
 import co.edu.iub.veterinaria.service.MascotaService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/mascotas")
 class MascotaController(
     private val mascotaService: MascotaService,
-    private val currentUserHelper: CurrentUserHelper
+    private val currentUserHelper: CurrentUserHelper,
+    private val moduleAuthorizationManager: ModuleAuthorizationManager
 ) {
     @GetMapping
     fun listar(authentication: Authentication): List<MascotaResponse> {
@@ -50,7 +52,11 @@ class MascotaController(
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun crear(@Valid @RequestBody request: MascotaRequest, authentication: Authentication): MascotaResponse =
-        mascotaService.crear(request, currentUserHelper.getClienteIdContextual(authentication))
+        mascotaService.crear(
+            request,
+            currentUserHelper.getClienteIdContextual(authentication),
+            puedeGestionarFichas(authentication)
+        )
 
     @PutMapping("/{id}")
     fun actualizar(
@@ -58,7 +64,15 @@ class MascotaController(
         @Valid @RequestBody request: MascotaRequest,
         authentication: Authentication
     ): MascotaResponse =
-        mascotaService.actualizar(id, request, currentUserHelper.getClienteIdContextual(authentication))
+        mascotaService.actualizar(
+            id,
+            request,
+            currentUserHelper.getClienteIdContextual(authentication),
+            puedeGestionarFichas(authentication)
+        )
+
+    private fun puedeGestionarFichas(authentication: Authentication): Boolean =
+        moduleAuthorizationManager.tieneModulo(authentication, "CLIENTES", "USUARIOS")
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
