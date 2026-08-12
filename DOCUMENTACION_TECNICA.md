@@ -161,8 +161,8 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 | GET | `/mascotas/mis-mascotas` | Authenticated | Mis mascotas |
 | GET | `/mascotas/{id}` | RECEP, ADMIN, VET, EST | Buscar por ID |
 | GET | `/mascotas/cliente/{idCliente}` | RECEP, ADMIN, VET, EST | Listar por cliente |
-| POST | `/mascotas` | MASCOTAS; creación de fichas solo RECEP/ADMIN o cliente puro (propio, máx. 5 activas); VET/EST read-only | Crear |
-| PUT | `/mascotas/{id}` | MASCOTAS; edición solo RECEP/ADMIN o el dueño (cliente puro, sin cambiar de dueño); VET/EST read-only | Actualizar |
+| POST | `/mascotas` | MASCOTAS; creación de fichas solo RECEP/ADMIN o cliente puro (propio, máx. 5 activas); VET/EST read-only; peso 0.01–500.00 kg, fechaNacimiento no futura | Crear |
+| PUT | `/mascotas/{id}` | MASCOTAS; edición solo RECEP/ADMIN o el dueño (cliente puro, sin cambiar de dueño); VET/EST read-only; peso 0.01–500.00 kg, fechaNacimiento no futura | Actualizar |
 | DELETE | `/mascotas/{id}` | CLIENTES o USUARIOS (RECEP, ADMIN) — soft | Eliminar (soft) |
 
 ### Citas (`/citas`)
