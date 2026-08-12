@@ -54,6 +54,7 @@ class ModuleAuthorizationManager(
 
     companion object {
         private val DEFAULTES_POR_ROL = mapOf(
+            "CLIENTE" to setOf("MASCOTAS", "CITAS", "FACTURACION", "CALIFICACIONES"),
             "RECEPCIONISTA" to setOf("CLIENTES", "MASCOTAS", "CITAS", "FACTURACION"),
             "VETERINARIO" to setOf("MASCOTAS", "CITAS", "HISTORIAL"),
             "ESTILISTA" to setOf("MASCOTAS", "CITAS", "HISTORIAL")
