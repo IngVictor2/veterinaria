@@ -2,6 +2,7 @@ package co.edu.iub.veterinaria.service
 
 import co.edu.iub.veterinaria.dto.mascota.MascotaRequest
 import co.edu.iub.veterinaria.dto.mascota.MascotaResponse
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.Mascota
 import co.edu.iub.veterinaria.repository.ClienteRepository
@@ -37,7 +38,18 @@ class MascotaService(
     }
 
     @Transactional
-    fun crear(request: MascotaRequest): MascotaResponse {
+    fun crear(request: MascotaRequest, idClienteContextual: Int? = null): MascotaResponse {
+        if (idClienteContextual != null && request.idCliente != idClienteContextual) {
+            throw AccessDeniedException("No tiene permisos para crear mascotas para otro cliente")
+        }
+        if (idClienteContextual != null &&
+            mascotaRepository.countByClienteIdClienteAndEstadoTrue(request.idCliente) >= LIMITE_MASCOTAS
+        ) {
+            throw InvalidRequestException(
+                "Límite de $LIMITE_MASCOTAS mascotas alcanzado; solicita al recepcionista agregar otra"
+            )
+        }
+
         val cliente = clienteRepository.findById(request.idCliente)
             .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
 
@@ -55,9 +67,16 @@ class MascotaService(
     }
 
     @Transactional
-    fun actualizar(id: Int, request: MascotaRequest): MascotaResponse {
+    fun actualizar(id: Int, request: MascotaRequest, idClienteContextual: Int? = null): MascotaResponse {
         val mascota = mascotaRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Mascota no encontrada") }
+
+        if (idClienteContextual != null && mascota.cliente.idCliente != idClienteContextual) {
+            throw AccessDeniedException("No tiene permisos para editar esta mascota")
+        }
+        if (idClienteContextual != null && request.idCliente != idClienteContextual) {
+            throw AccessDeniedException("No tiene permisos para cambiar la mascota a otro cliente")
+        }
 
         val cliente = clienteRepository.findById(request.idCliente)
             .orElseThrow { ResourceNotFoundException("Cliente no encontrado") }
@@ -97,4 +116,8 @@ class MascotaService(
         createdAt = m.createdAt,
         updatedAt = m.updatedAt
     )
+
+    companion object {
+        const val LIMITE_MASCOTAS = 5L
+    }
 }

@@ -82,6 +82,7 @@ class SecurityConfig(
 
                     .requestMatchers("/mascotas/mis-mascotas").authenticated()
                     .requestMatchers(HttpMethod.GET, "/mascotas/{id}", "/mascotas/cliente/{idCliente}").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/mascotas/**").access(moduleAuthorizationManager.hasAnyModule("CLIENTES", "USUARIOS"))
                     .requestMatchers("/mascotas/**").access(moduleAuthorizationManager.hasModule("MASCOTAS"))
 
                     .requestMatchers("/citas/mis-citas").authenticated()

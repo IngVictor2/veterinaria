@@ -17,7 +17,14 @@ class MascotaController(
     private val currentUserHelper: CurrentUserHelper
 ) {
     @GetMapping
-    fun listar(): List<MascotaResponse> = mascotaService.listar()
+    fun listar(authentication: Authentication): List<MascotaResponse> {
+        val idClienteActual = currentUserHelper.getClienteIdContextual(authentication)
+        return if (idClienteActual != null) {
+            mascotaService.listarPorCliente(idClienteActual)
+        } else {
+            mascotaService.listar()
+        }
+    }
 
     @GetMapping("/mis-mascotas")
     fun misMascotas(authentication: Authentication): List<MascotaResponse> {
@@ -42,12 +49,16 @@ class MascotaController(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun crear(@Valid @RequestBody request: MascotaRequest): MascotaResponse =
-        mascotaService.crear(request)
+    fun crear(@Valid @RequestBody request: MascotaRequest, authentication: Authentication): MascotaResponse =
+        mascotaService.crear(request, currentUserHelper.getClienteIdContextual(authentication))
 
     @PutMapping("/{id}")
-    fun actualizar(@PathVariable id: Int, @Valid @RequestBody request: MascotaRequest): MascotaResponse =
-        mascotaService.actualizar(id, request)
+    fun actualizar(
+        @PathVariable id: Int,
+        @Valid @RequestBody request: MascotaRequest,
+        authentication: Authentication
+    ): MascotaResponse =
+        mascotaService.actualizar(id, request, currentUserHelper.getClienteIdContextual(authentication))
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

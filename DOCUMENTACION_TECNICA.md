@@ -157,13 +157,13 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/mascotas` | RECEP, ADMIN, VET, EST | Listar todas |
+| GET | `/mascotas` | Staff (RECEP, ADMIN, VET, EST); cliente puro ve solo las suyas | Listar |
 | GET | `/mascotas/mis-mascotas` | Authenticated | Mis mascotas |
 | GET | `/mascotas/{id}` | RECEP, ADMIN, VET, EST | Buscar por ID |
 | GET | `/mascotas/cliente/{idCliente}` | RECEP, ADMIN, VET, EST | Listar por cliente |
-| POST | `/mascotas` | RECEP, ADMIN, VET, EST | Crear |
-| PUT | `/mascotas/{id}` | RECEP, ADMIN, VET, EST | Actualizar |
-| DELETE | `/mascotas/{id}` | RECEP, ADMIN, VET, EST | Eliminar (soft) |
+| POST | `/mascotas` | MASCOTAS; cliente puro limitado a 5 activas y solo propias (400 si excede) | Crear |
+| PUT | `/mascotas/{id}` | MASCOTAS; cliente puro solo suyas y sin cambiar de dueño | Actualizar |
+| DELETE | `/mascotas/{id}` | CLIENTES o USUARIOS (RECEP, ADMIN) — soft | Eliminar (soft) |
 
 ### Citas (`/citas`)
 
