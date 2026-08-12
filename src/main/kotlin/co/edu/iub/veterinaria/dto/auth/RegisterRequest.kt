@@ -13,7 +13,7 @@ data class RegisterRequest(
     val segundoNombre: String? = null,
     @field:NotBlank val primerApellido: String,
     val segundoApellido: String? = null,
-    val telefono: String? = null,
+    @field:NotBlank val telefono: String,
     val direccion: String? = null,
     @field:Email @field:NotBlank val email: String,
     @field:NotBlank @field:Size(min = 8) val password: String
