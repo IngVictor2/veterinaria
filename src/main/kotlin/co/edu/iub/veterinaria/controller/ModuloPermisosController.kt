@@ -2,6 +2,7 @@ package co.edu.iub.veterinaria.controller
 
 import co.edu.iub.veterinaria.dto.admin.AsignarPermisoRequest
 import co.edu.iub.veterinaria.dto.admin.RolModuloResponse
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.RolModulo
 import co.edu.iub.veterinaria.repository.ModuloRepository
@@ -53,6 +54,11 @@ class ModuloPermisosController(
     @DeleteMapping("/{idRol}/{idModulo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun revocar(@PathVariable idRol: Int, @PathVariable idModulo: Int) {
+        val rol = rolRepository.findById(idRol)
+            .orElseThrow { ResourceNotFoundException("Rol no encontrado") }
+        if (rol.nombre.equals("ADMIN", ignoreCase = true)) {
+            throw InvalidRequestException("No puedes quitar permisos al rol ADMIN")
+        }
         val permiso = rolModuloRepository
             .findByRolIdRol(idRol)
             .firstOrNull { it.modulo.idModulo == idModulo }

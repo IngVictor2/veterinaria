@@ -266,7 +266,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 |--------|------|-------------|
 | GET | `/admin/permisos/rol/{idRol}` | Permisos por rol |
 | POST | `/admin/permisos` | Asignar módulo a rol |
-| DELETE | `/admin/permisos/{idRol}/{idModulo}` | Revocar permiso |
+| DELETE | `/admin/permisos/{idRol}/{idModulo}` | Revocar permiso (no aplica al rol ADMIN) |
 
 ### Admin — Usuario-Roles (`/admin/usuario-roles`) — ADMIN
 
@@ -274,7 +274,7 @@ PENDIENTE ──→ CONFIRMADA ──→ ATENDIDA
 |--------|------|-------------|
 | GET | `/admin/usuario-roles/usuario/{idUsuario}` | Roles de usuario |
 | POST | `/admin/usuario-roles` | Asignar rol a usuario |
-| DELETE | `/admin/usuario-roles/{idUsuario}/{idRol}` | Revocar rol |
+| DELETE | `/admin/usuario-roles/{idUsuario}/{idRol}` | Revocar rol (no permite quitárselo al propio admin) |
 
 ## 6. Seguridad
 

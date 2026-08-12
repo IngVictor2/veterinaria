@@ -2,6 +2,7 @@ package co.edu.iub.veterinaria.controller
 
 import co.edu.iub.veterinaria.dto.admin.RolRequest
 import co.edu.iub.veterinaria.dto.admin.RolResponse
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.Rol
 import co.edu.iub.veterinaria.repository.RolRepository
@@ -41,6 +42,9 @@ class RoleController(
     fun eliminar(@PathVariable id: Int) {
         val rol = rolRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Rol no encontrado") }
+        if (rol.nombre.equals("ADMIN", ignoreCase = true)) {
+            throw InvalidRequestException("No puedes eliminar el rol ADMIN")
+        }
         rol.estado = false
         rolRepository.save(rol)
     }

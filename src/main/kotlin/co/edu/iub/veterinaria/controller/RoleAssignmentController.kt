@@ -2,6 +2,7 @@ package co.edu.iub.veterinaria.controller
 
 import co.edu.iub.veterinaria.dto.admin.AsignarRolRequest
 import co.edu.iub.veterinaria.dto.admin.UsuarioRolResponse
+import co.edu.iub.veterinaria.exception.InvalidRequestException
 import co.edu.iub.veterinaria.exception.ResourceNotFoundException
 import co.edu.iub.veterinaria.model.UsuarioRol
 import co.edu.iub.veterinaria.repository.RolRepository
@@ -9,6 +10,7 @@ import co.edu.iub.veterinaria.repository.UsuarioRepository
 import co.edu.iub.veterinaria.repository.UsuarioRolRepository
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -49,7 +51,10 @@ class RoleAssignmentController(
 
     @DeleteMapping("/{idUsuario}/{idRol}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun revocar(@PathVariable idUsuario: Int, @PathVariable idRol: Int) {
+    fun revocar(@PathVariable idUsuario: Int, @PathVariable idRol: Int, authentication: Authentication) {
+        if (idUsuario == authentication.principal as Int) {
+            throw InvalidRequestException("No puedes quitarte roles a ti mismo")
+        }
         val asignacion = usuarioRolRepository
             .findByUsuarioIdUsuario(idUsuario)
             .firstOrNull { it.rol.idRol == idRol }
