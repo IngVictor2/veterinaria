@@ -370,6 +370,7 @@ No hay `DataInitializer`: los datos base se gestionan directamente en la base de
 - **5 roles**: ADMIN, VETERINARIO, ESTILISTA, RECEPCIONISTA, CLIENTE
 - **9 módulos**: CLIENTES, MASCOTAS, CITAS, FACTURACION, HISTORIAL, USUARIOS, ROLES, TARIFAS, CALIFICACIONES
 - **Asignaciones rol_modulo**: permisos de cada rol sobre sus módulos
+- **Fallback de módulos en código** (`DEFAULTES_POR_ROL` en `ModuleAuthorizationManager`): si un rol no tiene filas `rol_modulo` activas, se usan estos defaults — CLIENTE: MASCOTAS, CITAS, FACTURACION, CALIFICACIONES; RECEPCIONISTA: CLIENTES, MASCOTAS, CITAS, FACTURACION; VETERINARIO y ESTILISTA: MASCOTAS, CITAS, HISTORIAL (ADMIN siempre pasa)
 - **4 cargos**: VETERINARIO, ESTILISTA, RECEPCIONISTA, ADMINISTRADOR
 - **7 servicios**: Consulta General ($50k), Consulta Especializada ($80k), Vacunación ($35k), Baño Medicado ($40k), Corte de Pelo ($35k), Limpieza Dental ($60k), Cirugía Menor ($150k)
 - **4 métodos de pago**: EFECTIVO, TARJETA_DEBITO, TARJETA_CREDITO, TRANSFERENCIA
